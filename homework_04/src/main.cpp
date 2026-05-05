@@ -1,6 +1,10 @@
 #include <fstream>
 #include <iostream>
 
+const int ticks_per_revolution = 1024;
+const double wheel_radius_m = 0.3;
+const double wheelbase_m = 1.0;
+
 int main(int argc, char** argv) 
 {
     // The program expects exactly one argument: a path to telemetry samples.
