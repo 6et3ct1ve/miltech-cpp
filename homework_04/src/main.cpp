@@ -1,11 +1,39 @@
+#include <fstream>
 #include <iostream>
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv) 
+{
     // The program expects exactly one argument: a path to telemetry samples.
-    if (argc != 2) {
+    if (argc != 2) 
+    {
         std::cerr << "usage: ugv_odometry <input_path>\n";
         return 1;
     }
+
+    std::ifstream fin(argv[1]);
+        if (!fin.is_open())
+    {
+        std::cerr << "File read error\n";
+        return 1;
+    }
+
+    long prev_timestamp, prev_fl, prev_fr, prev_bl, prev_br;
+
+    fin >> prev_timestamp >> prev_fl >> prev_fr >> prev_bl >> prev_br;
+
+    long timestamp, fl, fr, bl, br;
+
+    while (fin >> timestamp >> fl >> fr >> bl >> br) 
+    {
+        
+    }
+
+    if (fin.fail()) 
+    { 
+        std::cout << "Input format error\n"; 
+        return 1;
+    }
+    fin.close();
 
     // TODO: implement wheel odometry for a 4-wheel differential-drive UGV.
     //
