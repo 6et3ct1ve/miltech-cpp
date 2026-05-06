@@ -1,5 +1,7 @@
 #include <fstream>
 #include <iostream>
+#define _USE_MATH_DEFINES
+#include <cmath>
 
 const int ticks_per_revolution = 1024;
 const double wheel_radius_m = 0.3;
@@ -25,11 +27,23 @@ int main(int argc, char** argv)
 
     fin >> prev_timestamp >> prev_fl >> prev_fr >> prev_bl >> prev_br;
 
-    long timestamp, fl, fr, bl, br;
+    long timestamp_ms, fl_ticks, fr_ticks, bl_ticks, br_ticks;
 
-    while (fin >> timestamp >> fl >> fr >> bl >> br) 
+    while (fin >> timestamp_ms >> fl_ticks >> fr_ticks >> bl_ticks >> br_ticks) 
     {
-        
+        long d_fl = fl_ticks - prev_fl;
+        long d_fr = fr_ticks - prev_fr;
+        long d_bl = bl_ticks - prev_bl;
+        long d_br = br_ticks - prev_br;
+
+        double d_left  = static_cast<double>(d_fl + d_bl)/2.0;
+        double d_right = static_cast<double>(d_fr + d_br)/2.0;
+
+        double distance_per_tick = 2.0 * M_PI * wheel_radius_m / static_cast<double>(ticks_per_revolution);
+        double dL = d_left  * distance_per_tick;
+        double dR = d_right * distance_per_tick;
+
+
     }
 
     if (fin.fail()) 
