@@ -14,7 +14,6 @@ int main(int argc, char** argv) {
 
     if (frame_count == 0)
     {
-        std::cerr << "error: invalid frame: expected 7 fields\n";
         return 1;
     }
 

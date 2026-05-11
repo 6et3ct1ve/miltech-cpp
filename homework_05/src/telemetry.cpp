@@ -38,27 +38,29 @@ int split_line(char line[], char* fields[], int max_fields) {
     return count;
 }
 
-long parse_long(const char* text) {
+long parse_long(const char* text, bool& ok) {
     char* end = nullptr;
     const long value = std::strtol(text, &end, 10);
 
     if (end == text) {
-        std::abort();
+        ok = false;
+        std::cerr << "error: invalid integer number>" << text << '\n';
     }
 
     return value;
 }
 
-int parse_int(const char* text) {
-    return static_cast<int>(parse_long(text));
+int parse_int(const char* text, bool& ok) {
+    return static_cast<int>(parse_long(text, ok));
 }
 
-double parse_double(const char* text) {
+double parse_double(const char* text, bool& ok) {
     char* end = nullptr;
     const double value = std::strtod(text, &end);
 
     if (end == text) {
-        std::abort();
+        ok = false;
+        std::cerr << "error: invalid floating-point number>" << text << '\n';
     }
 
     return value;
@@ -73,16 +75,17 @@ Frame parse_frame(char line[], bool& ok) {
     if (field_count != EXPECTED_FIELD_COUNT)
     {
         ok = false;
+        std::cerr << "error: invalid frame: expected 7 fields\n";
         return frame;
     }
 
-    frame.timestamp_ms = parse_long(fields[0]);
-    frame.seq = parse_int(fields[1]);
-    frame.voltage_v = parse_double(fields[2]);
-    frame.current_a = parse_double(fields[3]);
-    frame.temperature_c = parse_double(fields[4]);
-    frame.gps_fix = parse_int(fields[5]);
-    frame.satellites = parse_int(fields[6]);
+    frame.timestamp_ms = parse_long(fields[0], ok);
+    frame.seq = parse_int(fields[1], ok);
+    frame.voltage_v = parse_double(fields[2], ok);
+    frame.current_a = parse_double(fields[3], ok);
+    frame.temperature_c = parse_double(fields[4], ok);
+    frame.gps_fix = parse_int(fields[5], ok);
+    frame.satellites = parse_int(fields[6], ok);
     return frame;
 }
 
@@ -116,6 +119,11 @@ int read_frames(const char* path, Frame frames[], int max_frames) {
             }
             ++frame_count;
         }
+    }
+
+    if (frame_count == 0)
+    {
+        std::cerr << "error: file empty\n";
     }
 
     return frame_count;
