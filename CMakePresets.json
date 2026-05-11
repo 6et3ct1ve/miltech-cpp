@@ -30,6 +30,7 @@
     {
       "name": "release",
       "binaryDir": "${sourceDir}/build/release",
+      "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
@@ -37,6 +38,7 @@
     {
       "name": "relwithdebinfo",
       "binaryDir": "${sourceDir}/build/relwithdebinfo",
+      "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo"
       }
