@@ -29,7 +29,7 @@ struct Summary {
 int read_frames(const char* path, Frame frames[], int max_frames);
 
 // Calculates summary values for already parsed frames.
-Summary summarize(const Frame frames[], int frame_count);
+Summary summarize(const Frame frames[], int frame_count, bool& ok);
 
 // Prints summary in the stable homework output format.
 void print_summary(const Summary& summary);

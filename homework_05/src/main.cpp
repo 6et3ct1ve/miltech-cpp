@@ -17,7 +17,15 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    const Summary summary = summarize(frames, frame_count);
+    bool ok = true;
+
+    const Summary summary = summarize(frames, frame_count, ok);
+
+    if (!ok)
+    {
+        return 1;
+    }
+
     print_summary(summary);
 
     return 0;

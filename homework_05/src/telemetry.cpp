@@ -89,9 +89,13 @@ Frame parse_frame(char line[], bool& ok) {
     return frame;
 }
 
-double compute_frame_rate_hz(const Frame frames[], int frame_count) {
+double compute_frame_rate_hz(const Frame frames[], int frame_count, bool& ok) {
     const long elapsed_ms = frames[frame_count - 1].timestamp_ms - frames[0].timestamp_ms;
-
+    if (elapsed_ms == 0)
+    {
+        ok = false;
+        return 0;
+    }
     return static_cast<double>((frame_count - 1) * 1000 / elapsed_ms);
 }
 
@@ -129,7 +133,7 @@ int read_frames(const char* path, Frame frames[], int max_frames) {
     return frame_count;
 }
 
-Summary summarize(const Frame frames[], int frame_count) {
+Summary summarize(const Frame frames[], int frame_count, bool& ok) {
     Summary summary{};
     summary.frames_total = frame_count;
     summary.frames_valid = frame_count;
@@ -157,7 +161,11 @@ Summary summarize(const Frame frames[], int frame_count) {
 
     const int temperature_tenths = static_cast<int>(temperature_sum * 10.0) / frame_count;
     summary.temperature_avg = static_cast<double>(temperature_tenths) / 10.0;
-    summary.frame_rate_hz = compute_frame_rate_hz(frames, frame_count);
+    summary.frame_rate_hz = compute_frame_rate_hz(frames, frame_count, ok);
+    if (!ok)
+    {
+        std::cerr << "error: zero time delta between frames\n";
+    }
     return summary;
 }
 
