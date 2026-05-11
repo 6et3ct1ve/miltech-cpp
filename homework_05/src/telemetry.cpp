@@ -69,7 +69,7 @@ Frame parse_frame(char line[], bool& ok) {
     const int field_count = split_line(line, fields, EXPECTED_FIELD_COUNT);
 
     Frame frame{};
-    
+
     if (field_count != EXPECTED_FIELD_COUNT)
     {
         ok = false;
@@ -112,7 +112,6 @@ int read_frames(const char* path, Frame frames[], int max_frames) {
             frames[frame_count] = parse_frame(line, ok);
             if (!ok)
             {
-                std::cerr << "error: invalid frame: expected 7 fields\n";
                 return 0;
             }
             ++frame_count;
