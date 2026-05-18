@@ -82,10 +82,30 @@ Frame parse_frame(char line[], bool& ok) {
     frame.timestamp_ms = parse_long(fields[0], ok);
     frame.seq = parse_int(fields[1], ok);
     frame.voltage_v = parse_double(fields[2], ok);
+    if (frame.voltage_v <= 0.0)
+    {
+        ok = false;
+        std::cerr << "error: voltage is lower than zero\n";
+    }
     frame.current_a = parse_double(fields[3], ok);
     frame.temperature_c = parse_double(fields[4], ok);
+    if (frame.temperature_c < -40.0 || frame.temperature_c > 120.0)
+    {
+        ok = false;
+        std::cerr << "error: danger temperature\n";
+    }
     frame.gps_fix = parse_int(fields[5], ok);
+    if (frame.gps_fix != 0 && frame.gps_fix != 1)
+    {
+        ok = false;
+        std::cerr << "error: invalid gps fix value\n";
+    }
     frame.satellites = parse_int(fields[6], ok);
+    if (frame.satellites < 0)
+    {
+        ok = false;
+        std::cerr << "error: number of satellites is lower than zero\n";
+    }
     return frame;
 }
 
@@ -119,6 +139,11 @@ int read_frames(const char* path, Frame frames[], int max_frames) {
             frames[frame_count] = parse_frame(line, ok);
             if (!ok)
             {
+                return 0;
+            }
+            if (frame_count > 0 && frames[frame_count].seq != frames[frame_count - 1].seq + 1)
+            {
+                std::cerr << "error: frame count bug\n";
                 return 0;
             }
             ++frame_count;
