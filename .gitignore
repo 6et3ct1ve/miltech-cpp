@@ -12,6 +12,7 @@ cmake_install.cmake
 compile_commands.json
 install_manifest.txt
 _deps/
+!homework_06/Makefile
 
 # Мінімальний набір compiled/debug артефактів для C++ прикладів.
 *.d
