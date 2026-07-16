@@ -22,10 +22,12 @@ public:
 
   int getTargetCount() override;
   Target getTarget(int index) override;
+  bool isValid() const;
 
 private:
   Coord** targets_;
   int targetCount_;
   int timeSteps_;
   float arrayTimeStep_;
+  bool ok_;
 };
