@@ -46,7 +46,7 @@ float horizon(const AmmoParams& ammo, float t, float v0)
 }  // namespace
 
 Coord AnalyticalSolver::solve(
-  Coord dronePos, Coord targetPos, float altitude, float accelPath, float attackSpeed, const AmmoParams& ammo, bool& ok)
+  Coord dronePos, Coord targetPos, float altitude, float accelPath, float attackSpeed, const AmmoParams& ammo, float& outH, bool& ok)
 {
   float t = cardano(ammo, attackSpeed, altitude);
   if (t < 0) {
@@ -61,6 +61,7 @@ Coord AnalyticalSolver::solve(
     std::cerr << "Horizon error\n";
     return {};
   }
+  outH = h;
 
   float D = sqrtf(pow(targetPos.x - dronePos.x, 2) + pow(targetPos.y - dronePos.y, 2));
   if (fabsf(D) < 1e-9f) {
