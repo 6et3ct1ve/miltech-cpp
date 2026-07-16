@@ -10,9 +10,12 @@ struct Target {
 
 class ITargetProvider {
 public:
+  ITargetProvider() = default;
+  ITargetProvider(const ITargetProvider&) = delete;
+  ITargetProvider& operator=(const ITargetProvider&) = delete;
   virtual int getTargetCount() = 0;
   virtual Target getTarget(int index) = 0;
-  virtual ~ITargetProvider() {}
+  virtual ~ITargetProvider() = default;
 };
 
 class JsonTargetProvider : public ITargetProvider {

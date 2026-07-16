@@ -22,10 +22,13 @@ struct DroneConfig {
 
 class IConfigLoader {
 public:
+  IConfigLoader() = default;
+  IConfigLoader(const IConfigLoader&) = delete;
+  IConfigLoader& operator=(const IConfigLoader&) = delete;
   virtual bool load() = 0;
   virtual DroneConfig getConfig() = 0;
   virtual AmmoParams getAmmoParams() = 0;
-  virtual ~IConfigLoader() {}
+  virtual ~IConfigLoader() = default;
 };
 
 class FileConfigLoader : public IConfigLoader {
