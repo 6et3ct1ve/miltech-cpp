@@ -5,6 +5,8 @@
 #include "target_provider.hpp"
 #include "ballistic_solver.hpp"
 
+constexpr int kMaxSteps = 10000;
+
 enum class DroneState { STOPPED, ACCELERATING, DECELERATING, TURNING, MOVING };
 
 struct SimStep {

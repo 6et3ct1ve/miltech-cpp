@@ -1,6 +1,5 @@
 #pragma once
 
-#define MAX_STEPS 10000
 #define ENABLE_LOG 1
 #define ENABLE_DEBUG 0
 
