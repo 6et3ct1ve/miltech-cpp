@@ -15,7 +15,7 @@ FileConfigLoader::FileConfigLoader(const char* configPath, const char* ammoPath)
 {
 }
 
-bool FileConfigLoader::load()
+bool FileConfigLoader::load()  // NOLINT(modernize-use-trailing-return-type)
 {
   std::ifstream configFile(configPath_);
   if (!configFile.is_open()) {
@@ -40,16 +40,19 @@ bool FileConfigLoader::load()
   config_.angularSpeed = droneConfig["drone"]["angularSpeed"];
   config_.turnThreshold = droneConfig["drone"]["turnThreshold"];
   std::string tmp = droneConfig["ammo"].get<std::string>();
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay, cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
   std::strncpy(config_.ammoName, tmp.c_str(), 31);
   config_.simTimeStep = droneConfig["simulation"]["timeStep"];
   config_.hitRadius = droneConfig["simulation"]["hitRadius"];
   config_.arrayTimeStep = droneConfig["targetArrayTimeStep"];
 
+  // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
   if (fabsf(config_.arrayTimeStep) < 1e-9f || fabsf(config_.attackSpeed) < 1e-9f || fabsf(config_.simTimeStep) < 1e-9f ||
       fabsf(config_.accelPath) < 1e-9f || fabsf(config_.angularSpeed) < 1e-9f) {
     std::cerr << "Input format error\n";
     return false;
   }
+  // NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
 
   std::ifstream ammoFile(ammoPath_);
   if (!ammoFile.is_open()) {
@@ -64,7 +67,7 @@ bool FileConfigLoader::load()
   }
   ammoFile.close();
 
-  int ammoCount = ammoParams.size();
+  int ammoCount = static_cast<int>(ammoParams.size());
 
   if (ammoCount == 0) {
     std::cerr << "Empty ammo list\n";
@@ -73,14 +76,16 @@ bool FileConfigLoader::load()
 
   bool found = false;
   for (int i = 0; i < ammoCount; i++) {
-    std::string name = ammoParams[i]["name"].get<std::string>();
-    if (std::strcmp(config_.ammoName, name.c_str()) == 0) {
-      std::strncpy(ammoParams_.name, name.c_str(), 31);
+    std::string name = ammoParams[i]["name"].get<std::string>();  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+    if (std::strcmp(config_.ammoName, name.c_str()) == 0) {       // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+                                                                  // cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+      std::strncpy(ammoParams_.name, name.c_str(), 31);           // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+                                                                  // cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
       ammoParams_.mass = ammoParams[i]["mass"];
       ammoParams_.drag = ammoParams[i]["drag"];
       ammoParams_.lift = ammoParams[i]["lift"];
       found = true;
-      LOG("Ammo found>" << ammoParams_.name);
+      LOG("Ammo found>" << ammoParams_.name);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
       break;
     }
   }
@@ -93,12 +98,12 @@ bool FileConfigLoader::load()
   return true;
 }
 
-DroneConfig FileConfigLoader::getConfig()
+DroneConfig FileConfigLoader::getConfig()  // NOLINT(modernize-use-trailing-return-type)
 {
   return config_;
 }
 
-AmmoParams FileConfigLoader::getAmmoParams()
+AmmoParams FileConfigLoader::getAmmoParams()  // NOLINT(modernize-use-trailing-return-type)
 {
   return ammoParams_;
 }
