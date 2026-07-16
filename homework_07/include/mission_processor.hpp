@@ -47,5 +47,13 @@ private:
   float currentTime_;
   int steps_;
 
+  int targetCount_;
+  bool ok_;
+  bool finished_;
+
+  Coord* firePoint_;
+  float* totalTime_;
+  Coord* predictedAll_;
+
   SimStep* simSteps_;
 };

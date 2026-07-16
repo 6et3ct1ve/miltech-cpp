@@ -1,0 +1,272 @@
+#include "mission_processor.hpp"
+#include "ballistic_solver.hpp"
+#include "config_loader.hpp"
+#include "logging.hpp"
+#include "target_provider.hpp"
+
+#include <cmath>
+#include <iostream>
+
+namespace {
+
+Coord interpolateTarget(Coord* target, int timeSteps, float arrayTimeStep, float currentTime)
+{
+  int idx = static_cast<int>(floor(currentTime / arrayTimeStep)) % timeSteps;
+  int next = (idx + 1) % timeSteps;
+  float frac = (currentTime - idx * arrayTimeStep) / arrayTimeStep;
+  return target[idx] + (target[next] - target[idx]) * frac;
+}
+
+Coord velocity(Coord* target, int timeSteps, float arrayTimeStep, float currentTime, float simTimeStep)
+{
+  Coord d = interpolateTarget(target, timeSteps, arrayTimeStep, currentTime + simTimeStep) -
+            interpolateTarget(target, timeSteps, arrayTimeStep, currentTime);
+  return d / simTimeStep;
+}
+
+float sign(float delta)
+{
+  return (fabsf(delta) < 1e-9f) ? 0.0f : (delta > 0) ? 1.0f : -1.0f;
+}
+
+}  // namespace
+
+MissionProcessor::MissionProcessor(ITargetProvider* provider, IBallisticSolver* solver, IConfigLoader* loader)
+  : provider_(provider)
+  , solver_(solver)
+  , loader_(loader)
+  , config_{}
+  , ammo_{}
+  , dronePos_{}
+  , dir_(0)
+  , speed_(0)
+  , acceleration_(0)
+  , droneState_(DroneState::STOPPED)
+  , prevTarget_(-1)
+  , currentTime_(0)
+  , steps_(0)
+  , targetCount_(0)
+  , ok_(true)
+  , finished_(false)
+  , firePoint_(nullptr)
+  , totalTime_(nullptr)
+  , predictedAll_(nullptr)
+  , simSteps_(nullptr)
+{
+}
+
+MissionProcessor::~MissionProcessor()
+{
+  delete[] firePoint_;
+  firePoint_ = nullptr;
+  delete[] totalTime_;
+  totalTime_ = nullptr;
+  delete[] predictedAll_;
+  predictedAll_ = nullptr;
+  delete[] simSteps_;
+  simSteps_ = nullptr;
+}
+
+bool MissionProcessor::init(const char* configSource)
+{
+  if (configSource == nullptr) {
+    return false;
+  }
+
+  config_ = loader_->getConfig();
+  ammo_ = loader_->getAmmoParams();
+
+  acceleration_ = (config_.attackSpeed * config_.attackSpeed) / (2 * config_.accelPath);
+  if (fabsf(acceleration_) < 1e-9f) {
+    std::cerr << "Calculation error\n";
+    return false;
+  }
+
+  targetCount_ = provider_->getTargetCount();
+  if (targetCount_ == 0) {
+    std::cerr << "No targets available\n";
+    return false;
+  }
+
+  dronePos_ = config_.startPos;
+  dir_ = config_.initialDir;
+  speed_ = config_.attackSpeed;
+  droneState_ = DroneState::MOVING;
+  prevTarget_ = -1;
+  currentTime_ = 0.0f;
+  steps_ = 0;
+
+  firePoint_ = new Coord[targetCount_];
+  totalTime_ = new float[targetCount_];
+  predictedAll_ = new Coord[targetCount_];
+  simSteps_ = new SimStep[kMaxSteps];
+
+  Target firstTarget = provider_->getTarget(0);
+  Coord firstPos = interpolateTarget(firstTarget.positions, firstTarget.timeSteps, firstTarget.arrayTimeStep, 0.0f);
+  bool solverOk = true;
+  float dummyH = 0.0f;
+  solver_->solve(dronePos_, firstPos, config_.altitude, config_.accelPath, config_.attackSpeed, ammo_, dummyH, solverOk);
+  if (!solverOk) {
+    return false;
+  }
+
+  LOG("Config loaded, speed = " << config_.attackSpeed);
+
+  return true;
+}
+
+bool MissionProcessor::hasNext() const
+{
+  return steps_ < kMaxSteps && ok_ && !finished_;
+}
+
+void MissionProcessor::step()
+{
+  float h = 0.0f;
+
+  for (int i = 0; i < targetCount_; i++) {
+    Target tgt = provider_->getTarget(i);
+    Coord target = interpolateTarget(tgt.positions, tgt.timeSteps, tgt.arrayTimeStep, currentTime_);
+    Coord vel = velocity(tgt.positions, tgt.timeSteps, tgt.arrayTimeStep, currentTime_, config_.simTimeStep);
+
+    float D = sqrtf(pow(target.x - dronePos_.x, 2) + pow(target.y - dronePos_.y, 2));
+    if (fabsf(D) < 1e-9f) {
+      std::cerr << "Calculation error\n";
+      ok_ = false;
+      return;
+    }
+    totalTime_[i] = D / config_.attackSpeed;
+
+    Coord predicted = target + vel * totalTime_[i];
+    predictedAll_[i] = predicted;
+
+    D = sqrtf(pow(predicted.x - dronePos_.x, 2) + pow(predicted.y - dronePos_.y, 2));
+    if (fabsf(D) < 1e-9f) {
+      std::cerr << "Calculation error\n";
+      ok_ = false;
+      return;
+    }
+    totalTime_[i] = D / config_.attackSpeed;
+
+    bool solverOk = true;
+    firePoint_[i] = solver_->solve(dronePos_, predicted, config_.altitude, config_.accelPath, config_.attackSpeed, ammo_, h, solverOk);
+    if (!solverOk) {
+      ok_ = false;
+      return;
+    }
+  }
+
+  float currentTargetTime = totalTime_[0];
+  int currentTarget = 0;
+  for (int i = 1; i < targetCount_; i++) {
+    if (totalTime_[i] < currentTargetTime) {
+      currentTarget = i;
+      currentTargetTime = totalTime_[i];
+    }
+  }
+
+  float newDir = atan2f(firePoint_[currentTarget].y - dronePos_.y, firePoint_[currentTarget].x - dronePos_.x);
+  float deltaAngle = newDir - dir_;
+  while (deltaAngle > M_PI)
+    deltaAngle -= 2 * M_PI;
+  while (deltaAngle < -M_PI)
+    deltaAngle += 2 * M_PI;
+
+  if (currentTarget != prevTarget_) {
+    float timeToStop = 0.0f;
+    switch (droneState_) {
+      case DroneState::STOPPED:
+        timeToStop = 0;
+        break;
+      case DroneState::MOVING:
+        timeToStop = config_.attackSpeed / acceleration_;
+        break;
+      case DroneState::ACCELERATING:
+        timeToStop = speed_ / acceleration_;
+        break;
+      case DroneState::TURNING:
+        timeToStop = fabsf(deltaAngle) / config_.angularSpeed;
+        break;
+      case DroneState::DECELERATING:
+        timeToStop = speed_ / acceleration_;
+        break;
+    }
+    totalTime_[currentTarget] += timeToStop;
+    prevTarget_ = currentTarget;
+  }
+
+  if (fabsf(deltaAngle) > config_.turnThreshold && droneState_ == DroneState::MOVING) {
+    droneState_ = DroneState::DECELERATING;
+  }
+
+  switch (droneState_) {
+    case DroneState::MOVING:
+      dir_ = newDir;
+      dronePos_.x += cosf(dir_) * speed_ * config_.simTimeStep;
+      dronePos_.y += sinf(dir_) * speed_ * config_.simTimeStep;
+      break;
+    case DroneState::DECELERATING:
+      speed_ -= acceleration_ * config_.simTimeStep;
+      if (speed_ <= 0) {
+        speed_ = 0;
+        droneState_ = DroneState::STOPPED;
+      }
+      dronePos_.x += cosf(dir_) * speed_ * config_.simTimeStep;
+      dronePos_.y += sinf(dir_) * speed_ * config_.simTimeStep;
+      break;
+    case DroneState::STOPPED:
+      droneState_ = DroneState::TURNING;
+      break;
+    case DroneState::TURNING:
+      dir_ += sign(deltaAngle) * config_.angularSpeed * config_.simTimeStep;
+      if (fabsf(deltaAngle) <= config_.turnThreshold) {
+        droneState_ = DroneState::ACCELERATING;
+      }
+      break;
+    case DroneState::ACCELERATING:
+      speed_ += acceleration_ * config_.simTimeStep;
+      if (speed_ >= config_.attackSpeed) {
+        speed_ = config_.attackSpeed;
+        droneState_ = DroneState::MOVING;
+      }
+      dronePos_.x += cosf(dir_) * speed_ * config_.simTimeStep;
+      dronePos_.y += sinf(dir_) * speed_ * config_.simTimeStep;
+      break;
+  }
+
+  simSteps_[steps_].pos = dronePos_;
+  simSteps_[steps_].direction = dir_;
+  simSteps_[steps_].state = droneState_;
+  simSteps_[steps_].targetIdx = currentTarget;
+  simSteps_[steps_].dropPoint = firePoint_[currentTarget];
+  simSteps_[steps_].aimPoint = dronePos_ + Coord{cosf(dir_), sinf(dir_)} * h;
+  simSteps_[steps_].predictedTarget = predictedAll_[currentTarget];
+  steps_++;
+
+  if (sqrtf(pow(dronePos_.x - firePoint_[currentTarget].x, 2) + pow(dronePos_.y - firePoint_[currentTarget].y, 2)) < config_.hitRadius) {
+    finished_ = true;
+  }
+
+  currentTime_ += config_.simTimeStep;
+
+  DEBUG("Step " << steps_ << " pos = (" << dronePos_.x << "," << dronePos_.y << ") target = " << currentTarget
+                << " state = " << static_cast<int>(droneState_));
+}
+
+void MissionProcessor::reset()
+{
+  dronePos_ = config_.startPos;
+  dir_ = config_.initialDir;
+  speed_ = config_.attackSpeed;
+  droneState_ = DroneState::MOVING;
+  prevTarget_ = -1;
+  currentTime_ = 0.0f;
+  steps_ = 0;
+  ok_ = true;
+  finished_ = false;
+}
+
+void MissionProcessor::changeSolver(IBallisticSolver* solver)
+{
+  solver_ = solver;
+}
