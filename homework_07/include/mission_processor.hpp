@@ -29,6 +29,8 @@ public:
   void step();
   void reset();
   void changeSolver(IBallisticSolver* solver);
+  int getStepCount() const;
+  const SimStep* getSteps() const;
 
 private:
   ITargetProvider* provider_;

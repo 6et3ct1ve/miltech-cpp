@@ -270,3 +270,13 @@ void MissionProcessor::changeSolver(IBallisticSolver* solver)
 {
   solver_ = solver;
 }
+
+int MissionProcessor::getStepCount() const
+{
+  return steps_;
+}
+
+const SimStep* MissionProcessor::getSteps() const
+{
+  return simSteps_;
+}
