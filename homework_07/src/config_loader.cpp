@@ -1,5 +1,6 @@
 #include "config_loader.hpp"
 #include "json.hpp"
+#include "logging.hpp"
 
 #include <fstream>
 #include <cstring>
@@ -79,6 +80,7 @@ bool FileConfigLoader::load()
       ammoParams_.drag = ammoParams[i]["drag"];
       ammoParams_.lift = ammoParams[i]["lift"];
       found = true;
+      LOG("Ammo found>" << ammoParams_.name);
       break;
     }
   }
