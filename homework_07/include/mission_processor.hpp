@@ -22,6 +22,10 @@ struct SimStep {
 class MissionProcessor {
 public:
   MissionProcessor(ITargetProvider* provider, IBallisticSolver* solver, IConfigLoader* loader);
+  MissionProcessor(const MissionProcessor&) = delete;
+  MissionProcessor& operator=(const MissionProcessor&) = delete;  // NOLINT(modernize-use-trailing-return-type)
+  MissionProcessor(MissionProcessor&&) = delete;
+  MissionProcessor& operator=(MissionProcessor&&) = delete;  // NOLINT(modernize-use-trailing-return-type)
   ~MissionProcessor();
 
   bool init(const char* configSource);
@@ -29,33 +33,32 @@ public:
   void step();
   void reset();
   void changeSolver(IBallisticSolver* solver);
-  int getStepCount() const;
-  const SimStep* getSteps() const;
+  [[nodiscard]] int getStepCount() const;         // NOLINT(modernize-use-trailing-return-type)
+  [[nodiscard]] const SimStep* getSteps() const;  // NOLINT(modernize-use-trailing-return-type)
 
 private:
   ITargetProvider* provider_;
   IBallisticSolver* solver_;
   IConfigLoader* loader_;
 
-  DroneConfig config_;
-  AmmoParams ammo_;
+  DroneConfig config_{};
+  AmmoParams ammo_{};
 
-  Coord dronePos_;
-  float dir_;
-  float speed_;
-  float acceleration_;
-  DroneState droneState_;
-  int prevTarget_;
-  float currentTime_;
-  int steps_;
+  Coord dronePos_{};
+  float dir_ = 0.0f;
+  float speed_ = 0.0f;
+  float acceleration_ = 0.0f;
+  DroneState droneState_ = DroneState::STOPPED;
+  int prevTarget_ = -1;
+  float currentTime_ = 0.0f;
+  int steps_ = 0;
+  bool ok_ = true;
+  bool finished_ = false;
+  int targetCount_ = 0;
 
-  int targetCount_;
-  bool ok_;
-  bool finished_;
+  Coord* firePoint_ = nullptr;
+  float* totalTime_ = nullptr;
+  Coord* predictedAll_ = nullptr;
 
-  Coord* firePoint_;
-  float* totalTime_;
-  Coord* predictedAll_;
-
-  SimStep* simSteps_;
+  SimStep* simSteps_ = nullptr;
 };

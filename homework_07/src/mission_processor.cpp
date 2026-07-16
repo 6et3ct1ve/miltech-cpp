@@ -7,13 +7,15 @@
 #include <cmath>
 #include <iostream>
 
+// NOLINTBEGIN(modernize-use-trailing-return-type,cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers,cppcoreguidelines-pro-bounds-pointer-arithmetic)
+
 namespace {
 
 Coord interpolateTarget(Coord* target, int timeSteps, float arrayTimeStep, float currentTime)
 {
   int idx = static_cast<int>(floor(currentTime / arrayTimeStep)) % timeSteps;
   int next = (idx + 1) % timeSteps;
-  float frac = (currentTime - idx * arrayTimeStep) / arrayTimeStep;
+  float frac = (currentTime - static_cast<float>(idx) * arrayTimeStep) / arrayTimeStep;
   return target[idx] + (target[next] - target[idx]) * frac;
 }
 
@@ -35,35 +37,18 @@ MissionProcessor::MissionProcessor(ITargetProvider* provider, IBallisticSolver* 
   : provider_(provider)
   , solver_(solver)
   , loader_(loader)
-  , config_{}
-  , ammo_{}
-  , dronePos_{}
-  , dir_(0)
-  , speed_(0)
-  , acceleration_(0)
-  , droneState_(DroneState::STOPPED)
-  , prevTarget_(-1)
-  , currentTime_(0)
-  , steps_(0)
-  , targetCount_(0)
-  , ok_(true)
-  , finished_(false)
-  , firePoint_(nullptr)
-  , totalTime_(nullptr)
-  , predictedAll_(nullptr)
-  , simSteps_(nullptr)
 {
 }
 
 MissionProcessor::~MissionProcessor()
 {
-  delete[] firePoint_;
+  delete[] firePoint_;  // NOLINT(cppcoreguidelines-owning-memory)
   firePoint_ = nullptr;
-  delete[] totalTime_;
+  delete[] totalTime_;  // NOLINT(cppcoreguidelines-owning-memory)
   totalTime_ = nullptr;
-  delete[] predictedAll_;
+  delete[] predictedAll_;  // NOLINT(cppcoreguidelines-owning-memory)
   predictedAll_ = nullptr;
-  delete[] simSteps_;
+  delete[] simSteps_;  // NOLINT(cppcoreguidelines-owning-memory)
   simSteps_ = nullptr;
 }
 
@@ -96,10 +81,10 @@ bool MissionProcessor::init(const char* configSource)
   currentTime_ = 0.0f;
   steps_ = 0;
 
-  firePoint_ = new Coord[targetCount_];
-  totalTime_ = new float[targetCount_];
-  predictedAll_ = new Coord[targetCount_];
-  simSteps_ = new SimStep[kMaxSteps];
+  firePoint_ = new Coord[targetCount_];     // NOLINT(cppcoreguidelines-owning-memory)
+  totalTime_ = new float[targetCount_];     // NOLINT(cppcoreguidelines-owning-memory)
+  predictedAll_ = new Coord[targetCount_];  // NOLINT(cppcoreguidelines-owning-memory)
+  simSteps_ = new SimStep[kMaxSteps];       // NOLINT(cppcoreguidelines-owning-memory)
 
   Target firstTarget = provider_->getTarget(0);
   Coord firstPos = interpolateTarget(firstTarget.positions, firstTarget.timeSteps, firstTarget.arrayTimeStep, 0.0f);
@@ -129,7 +114,7 @@ void MissionProcessor::step()
     Coord target = interpolateTarget(tgt.positions, tgt.timeSteps, tgt.arrayTimeStep, currentTime_);
     Coord vel = velocity(tgt.positions, tgt.timeSteps, tgt.arrayTimeStep, currentTime_, config_.simTimeStep);
 
-    float D = sqrtf(pow(target.x - dronePos_.x, 2) + pow(target.y - dronePos_.y, 2));
+    float D = sqrtf(powf(target.x - dronePos_.x, 2) + powf(target.y - dronePos_.y, 2));
     if (fabsf(D) < 1e-9f) {
       std::cerr << "Calculation error\n";
       ok_ = false;
@@ -140,7 +125,7 @@ void MissionProcessor::step()
     Coord predicted = target + vel * totalTime_[i];
     predictedAll_[i] = predicted;
 
-    D = sqrtf(pow(predicted.x - dronePos_.x, 2) + pow(predicted.y - dronePos_.y, 2));
+    D = sqrtf(powf(predicted.x - dronePos_.x, 2) + powf(predicted.y - dronePos_.y, 2));
     if (fabsf(D) < 1e-9f) {
       std::cerr << "Calculation error\n";
       ok_ = false;
@@ -243,7 +228,7 @@ void MissionProcessor::step()
   simSteps_[steps_].predictedTarget = predictedAll_[currentTarget];
   steps_++;
 
-  if (sqrtf(pow(dronePos_.x - firePoint_[currentTarget].x, 2) + pow(dronePos_.y - firePoint_[currentTarget].y, 2)) < config_.hitRadius) {
+  if (sqrtf(powf(dronePos_.x - firePoint_[currentTarget].x, 2) + powf(dronePos_.y - firePoint_[currentTarget].y, 2)) < config_.hitRadius) {
     finished_ = true;
   }
 
@@ -280,3 +265,4 @@ const SimStep* MissionProcessor::getSteps() const
 {
   return simSteps_;
 }
+// NOLINTEND(modernize-use-trailing-return-type,cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers,cppcoreguidelines-pro-bounds-pointer-arithmetic)
