@@ -13,6 +13,9 @@ compile_commands.json
 install_manifest.txt
 _deps/
 !homework_06/Makefile
+!homework_07/Makefile
+homework_07/data/simulation.json
+
 
 # Мінімальний набір compiled/debug артефактів для C++ прикладів.
 *.d
