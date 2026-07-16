@@ -1,12 +1,14 @@
 #include "ballistic_solver.hpp"
 
-#define _USE_MATH_DEFINES
+#include <numbers>
 #include <cmath>
 #include <iostream>
 
 namespace {
 constexpr float kG = 9.81f;
 
+// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, modernize-use-trailing-return-type) - physics formula
+// coefficients, not arbitrary constants; trailing return type is stylistic only
 float cardano(const AmmoParams& ammo, float v0, float z0)
 {
   float a = ammo.drag * kG * ammo.mass - 2 * powf(ammo.drag, 2) * ammo.lift * v0;
@@ -26,7 +28,7 @@ float cardano(const AmmoParams& ammo, float v0, float z0)
 
   float phi = acosf(arg);
 
-  return 2 * sqrtf(-p / 3) * cosf((phi + 4 * static_cast<float>(M_PI)) / 3) - b / (3 * a);
+  return 2 * sqrtf(-p / 3) * cosf((phi + 4 * std::numbers::pi_v<float>) / 3) - b / (3 * a);
 }
 
 float horizon(const AmmoParams& ammo, float t, float v0)
@@ -44,9 +46,12 @@ float horizon(const AmmoParams& ammo, float t, float v0)
             3 * powf(ammo.drag, 4) * powf(ammo.lift, 2) * (1 + powf(ammo.lift, 2)) * v0) /
            (36 * (1 + powf(ammo.lift, 2)) * powf(ammo.mass, 4));
 }
+// NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, modernize-use-trailing-return-type)
 
 }  // namespace
 
+// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, modernize-use-trailing-return-type) - epsilon comparisons;
+// trailing return type is stylistic only
 Coord AnalyticalSolver::solve(
   Coord dronePos, Coord targetPos, float altitude, float accelPath, float attackSpeed, const AmmoParams& ammo, float& outH, bool& ok)
 {
@@ -87,3 +92,4 @@ Coord AnalyticalSolver::solve(
   float ratio = (D - h) / D;
   return tempPos + (targetPos - tempPos) * ratio;
 }
+// NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, modernize-use-trailing-return-type)
