@@ -3,6 +3,8 @@
 #include <iostream>
 #include <cmath>
 
+// NOLINTBEGIN(modernize-use-trailing-return-type, cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers) - epsilon comparisons;
+// trailing return type is stylistic only
 struct Coord {
   float x;
   float y;
@@ -45,3 +47,4 @@ struct Coord {
 
   bool operator==(const Coord& other) const { return fabsf(x - other.x) < 1e-9f && fabsf(y - other.y) < 1e-9f; }
 };
+// NOLINTEND(modernize-use-trailing-return-type, cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
