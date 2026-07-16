@@ -26,3 +26,18 @@ target_compile_options(factory PRIVATE -Wall -Wextra -pedantic)
 add_executable(mission_check src/main.cpp)
 target_link_libraries(mission_check PRIVATE mission_processor factory)
 target_compile_options(mission_check PRIVATE -Wall -Wextra -pedantic)
+
+if(NOT CMAKE_CROSSCOMPILING)
+    include(FetchContent)
+    include(GoogleTest)
+    FetchContent_Declare(
+        googletest URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+                       DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
+    FetchContent_MakeAvailable(googletest)
+
+    add_executable(mission_tests tests/mission_tests.cpp)
+    target_include_directories(mission_tests PRIVATE include)
+    target_link_libraries(mission_tests PRIVATE config_loader target_provider ballistic_solver
+                                                mission_processor factory GTest::gtest_main)
+    gtest_discover_tests(mission_tests DISCOVERY_MODE PRE_TEST)
+endif()
