@@ -2,6 +2,7 @@
 
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <iostream>
 
 namespace {
 constexpr float kG = 9.81f;
@@ -50,18 +51,21 @@ Coord AnalyticalSolver::solve(
   float t = cardano(ammo, attackSpeed, altitude);
   if (t < 0) {
     ok = false;
+    std::cerr << "Time error\n";
     return {};
   }
 
   float h = horizon(ammo, t, attackSpeed);
   if (h < 0) {
     ok = false;
+    std::cerr << "Horizon error\n";
     return {};
   }
 
   float D = sqrtf(pow(targetPos.x - dronePos.x, 2) + pow(targetPos.y - dronePos.y, 2));
   if (fabsf(D) < 1e-9f) {
     ok = false;
+    std::cerr << "Calculation error\n";
     return {};
   }
 
@@ -72,6 +76,7 @@ Coord AnalyticalSolver::solve(
     D = sqrtf(pow(targetPos.x - tempPos.x, 2) + pow(targetPos.y - tempPos.y, 2));
     if (fabsf(D) < 1e-9f) {
       ok = false;
+      std::cerr << "Calculation error\n";
       return {};
     }
   }
