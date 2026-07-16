@@ -19,3 +19,26 @@ struct DroneConfig {
   float angularSpeed;
   float turnThreshold;
 };
+
+class IConfigLoader {
+public:
+  virtual bool load() = 0;
+  virtual DroneConfig getConfig() = 0;
+  virtual AmmoParams getAmmoParams() = 0;
+  virtual ~IConfigLoader() {}
+};
+
+class FileConfigLoader : public IConfigLoader {
+public:
+  FileConfigLoader(const char* configPath, const char* ammoPath);
+
+  bool load() override;
+  DroneConfig getConfig() override;
+  AmmoParams getAmmoParams() override;
+
+private:
+  const char* configPath_;
+  const char* ammoPath_;
+  DroneConfig config_;
+  AmmoParams ammoParams_;
+};
