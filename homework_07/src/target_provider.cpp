@@ -33,12 +33,12 @@ JsonTargetProvider::JsonTargetProvider(const char* path, float arrayTimeStep)
     return;
   }
 
-  targets_ = new Coord*[targetCount_];
+  targets_ = new Coord*[targetCount_];  // NOLINT(cppcoreguidelines-owning-memory)
   for (int i = 0; i < targetCount_; i++) {
-    targets_[i] = new Coord[timeSteps_];
+    targets_[i] = new Coord[timeSteps_];  // NOLINT(cppcoreguidelines-owning-memory, cppcoreguidelines-pro-bounds-pointer-arithmetic)
     for (int j = 0; j < timeSteps_; j++) {
-      targets_[i][j].x = targetsCoords["targets"][i]["positions"][j]["x"];
-      targets_[i][j].y = targetsCoords["targets"][i]["positions"][j]["y"];
+      targets_[i][j].x = targetsCoords["targets"][i]["positions"][j]["x"];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+      targets_[i][j].y = targetsCoords["targets"][i]["positions"][j]["y"];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     }
   }
   ok_ = true;
@@ -48,25 +48,25 @@ JsonTargetProvider::~JsonTargetProvider()
 {
   if (targets_ != nullptr) {
     for (int i = 0; i < targetCount_; i++) {
-      delete[] targets_[i];
-      targets_[i] = nullptr;
+      delete[] targets_[i];   // NOLINT(cppcoreguidelines-owning-memory, cppcoreguidelines-pro-bounds-pointer-arithmetic)
+      targets_[i] = nullptr;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     }
     delete[] targets_;
     targets_ = nullptr;
   }
 }
 
-int JsonTargetProvider::getTargetCount()
+int JsonTargetProvider::getTargetCount()  // NOLINT(modernize-use-trailing-return-type)
 {
   return targetCount_;
 }
 
-Target JsonTargetProvider::getTarget(int index)
+Target JsonTargetProvider::getTarget(int index)  // NOLINT(modernize-use-trailing-return-type)
 {
-  return Target{targets_[index], timeSteps_, arrayTimeStep_};
+  return Target{targets_[index], timeSteps_, arrayTimeStep_};  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 }
 
-bool JsonTargetProvider::isValid() const
+bool JsonTargetProvider::isValid() const  // NOLINT(modernize-use-trailing-return-type)
 {
   return ok_;
 }
