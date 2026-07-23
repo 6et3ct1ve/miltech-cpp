@@ -35,7 +35,7 @@ if(NOT CMAKE_CROSSCOMPILING)
                        DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
     FetchContent_MakeAvailable(googletest)
 
-    add_executable(MissionTests tests/mission_tests.cpp)
+    add_executable(MissionTests tests/MissionTests.cpp)
     target_include_directories(MissionTests PRIVATE include)
     target_link_libraries(MissionTests PRIVATE ConfigLoader TargetProvider BallisticSolver
                                                MissionProcessor Factory GTest::gtest_main)
