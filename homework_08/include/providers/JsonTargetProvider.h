@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Types.h"
 #include "interfaces/ITargetProvider.h"
 
 class JsonTargetProvider : public ITargetProvider {
