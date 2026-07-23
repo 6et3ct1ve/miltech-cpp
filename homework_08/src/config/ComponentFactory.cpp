@@ -1,4 +1,7 @@
-#include "factory.hpp"
+#include "config/ComponentFactory.h"
+#include "solvers/AnalyticalSolver.h"
+#include "providers/JsonTargetProvider.h"
+#include "config/FileConfigLoader.h"
 
 IBallisticSolver* createSolver(SolverType type)  // NOLINT(modernize-use-trailing-return-type)
 {
