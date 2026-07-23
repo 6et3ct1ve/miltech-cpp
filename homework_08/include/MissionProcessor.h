@@ -16,8 +16,8 @@ public:
   MissionProcessor& operator=(MissionProcessor&&) = delete;  // NOLINT(modernize-use-trailing-return-type)
   ~MissionProcessor();
 
-  bool init(const char* configSource);
-  bool hasNext() const;
+  bool init(const char* configSource);  // NOLINT(modernize-use-trailing-return-type)
+  [[nodiscard]] bool hasNext() const;   // NOLINT(modernize-use-trailing-return-type)
   void step();
   void reset();
   void changeSolver(IBallisticSolver* solver);

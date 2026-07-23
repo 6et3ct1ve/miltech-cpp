@@ -11,9 +11,9 @@ public:
   JsonTargetProvider& operator=(JsonTargetProvider&&) = delete;  // NOLINT(modernize-use-trailing-return-type)
   ~JsonTargetProvider() override;
 
-  int getTargetCount() override;
-  Target getTarget(int index) override;
-  bool isValid() const;
+  int getTargetCount() override;         // NOLINT(modernize-use-trailing-return-type)
+  Target getTarget(int index) override;  // NOLINT(modernize-use-trailing-return-type)
+  [[nodiscard]] bool isValid() const;    // NOLINT(modernize-use-trailing-return-type)
 
 private:
   Coord** targets_;
