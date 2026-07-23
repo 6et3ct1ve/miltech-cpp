@@ -1,5 +1,5 @@
-#include "target_provider.hpp"
-#include "coord.hpp"
+#include "providers/JsonTargetProvider.h"
+#include "Types.h"
 #include "json.hpp"
 
 #include <fstream>
