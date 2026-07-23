@@ -1,8 +1,8 @@
-#include "mission_processor.hpp"
-#include "ballistic_solver.hpp"
-#include "config_loader.hpp"
-#include "logging.hpp"
-#include "target_provider.hpp"
+#include "MissionProcessor.h"
+#include "interfaces/IBallisticSolver.h"
+#include "interfaces/IConfigLoader.h"
+#include "Logging.h"
+#include "interfaces/ITargetProvider.h"
 
 #include <cmath>
 #include <iostream>
