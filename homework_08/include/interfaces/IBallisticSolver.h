@@ -1,7 +1,6 @@
 #pragma once
 
-#include "coord.hpp"
-#include "config_loader.hpp"
+#include "Types.h"
 
 class IBallisticSolver {
 public:
@@ -20,16 +19,4 @@ public:
     float& outH,
     bool& ok) = 0;
   virtual ~IBallisticSolver() = default;
-};
-
-class AnalyticalSolver : public IBallisticSolver {
-public:
-  Coord solve(Coord dronePos,  // NOLINT(modernize-use-trailing-return-type)
-              Coord targetPos,
-              float altitude,
-              float accelPath,
-              float attackSpeed,
-              const AmmoParams& ammo,
-              float& outH,
-              bool& ok) override;
 };
