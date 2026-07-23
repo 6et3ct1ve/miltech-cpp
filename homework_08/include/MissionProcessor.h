@@ -1,23 +1,11 @@
 #pragma once
 
-#include "coord.hpp"
-#include "config_loader.hpp"
-#include "target_provider.hpp"
-#include "ballistic_solver.hpp"
+#include "Types.h"
+#include "interfaces/IConfigLoader.h"
+#include "interfaces/ITargetProvider.h"
+#include "interfaces/IBallisticSolver.h"
 
 constexpr int kMaxSteps = 10000;
-
-enum class DroneState { STOPPED, ACCELERATING, DECELERATING, TURNING, MOVING };
-
-struct SimStep {
-  Coord pos;
-  float direction;
-  DroneState state;
-  int targetIdx;
-  Coord dropPoint;
-  Coord aimPoint;
-  Coord predictedTarget;
-};
 
 class MissionProcessor {
 public:
