@@ -1,6 +1,6 @@
-#include "factory.hpp"
-#include "mission_processor.hpp"
-#include "logging.hpp"
+#include "config/ComponentFactory.h"
+#include "MissionProcessor.h"
+#include "Logging.h"
 
 #include <fstream>
 #include <iostream>
