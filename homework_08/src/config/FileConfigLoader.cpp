@@ -1,6 +1,6 @@
-#include "config_loader.hpp"
+#include "config/FileConfigLoader.h"
 #include "json.hpp"
-#include "logging.hpp"
+#include "Logging.h"
 
 #include <fstream>
 #include <cstring>
