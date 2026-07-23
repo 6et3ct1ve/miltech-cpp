@@ -1,7 +1,7 @@
-#include "coord.hpp"
-#include "ballistic_solver.hpp"
-#include "config_loader.hpp"
-#include "target_provider.hpp"
+#include "Types.h"
+#include "solvers/AnalyticalSolver.h"
+#include "config/FileConfigLoader.h"
+#include "providers/JsonTargetProvider.h"
 #include <gtest/gtest.h>
 
 // NOLINTBEGIN(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
