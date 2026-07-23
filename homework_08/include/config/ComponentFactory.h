@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ballistic_solver.hpp"
-#include "target_provider.hpp"
-#include "config_loader.hpp"
+#include "interfaces/IBallisticSolver.h"
+#include "interfaces/ITargetProvider.h"
+#include "interfaces/IConfigLoader.h"
 
 enum class SolverType { ANALYTICAL };
 enum class ProviderType { JSON };
