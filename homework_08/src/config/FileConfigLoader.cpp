@@ -72,13 +72,13 @@ bool FileConfigLoader::load()  // NOLINT(modernize-use-trailing-return-type)
   }
 
   bool found = false;
-  for (int i = 0; i < ammoCount; i++) {
-    std::string name = ammoParams[i]["name"].get<std::string>();
+  for (const auto& entry : ammoParams) {
+    std::string name = entry["name"].get<std::string>();
     if (config_.ammoName == name) {
       ammoParams_.name = name;
-      ammoParams_.mass = ammoParams[i]["mass"];
-      ammoParams_.drag = ammoParams[i]["drag"];
-      ammoParams_.lift = ammoParams[i]["lift"];
+      ammoParams_.mass = entry["mass"];
+      ammoParams_.drag = entry["drag"];
+      ammoParams_.lift = entry["lift"];
       found = true;
       LOG("Ammo found>" << ammoParams_.name);
       break;
