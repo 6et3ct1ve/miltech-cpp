@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cmath>
 #include <string>
+#include <span>
 
 // NOLINTBEGIN(modernize-use-trailing-return-type, cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers) - epsilon comparisons;
 // trailing return type is stylistic only
@@ -51,8 +52,7 @@ struct Coord {
 // NOLINTEND(modernize-use-trailing-return-type, cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
 
 struct Target {
-  Coord* positions;
-  int timeSteps;
+  std::span<const Coord> positions;
   float arrayTimeStep;
 };
 

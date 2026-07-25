@@ -7,23 +7,25 @@
 #include <cmath>
 #include <iostream>
 #include <string>
+#include <span>
+#include <vector>
 
 // NOLINTBEGIN(modernize-use-trailing-return-type,cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers,cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 namespace {
 
-Coord interpolateTarget(Coord* target, int timeSteps, float arrayTimeStep, float currentTime)
+Coord interpolateTarget(std::span<const Coord> target, float arrayTimeStep, float currentTime)
 {
+  int timeSteps = static_cast<int>(target.size());
   int idx = static_cast<int>(floor(currentTime / arrayTimeStep)) % timeSteps;
   int next = (idx + 1) % timeSteps;
   float frac = (currentTime - static_cast<float>(idx) * arrayTimeStep) / arrayTimeStep;
   return target[idx] + (target[next] - target[idx]) * frac;
 }
 
-Coord velocity(Coord* target, int timeSteps, float arrayTimeStep, float currentTime, float simTimeStep)
+Coord velocity(std::span<const Coord> target, float arrayTimeStep, float currentTime, float simTimeStep)
 {
-  Coord d = interpolateTarget(target, timeSteps, arrayTimeStep, currentTime + simTimeStep) -
-            interpolateTarget(target, timeSteps, arrayTimeStep, currentTime);
+  Coord d = interpolateTarget(target, arrayTimeStep, currentTime + simTimeStep) - interpolateTarget(target, arrayTimeStep, currentTime);
   return d / simTimeStep;
 }
 
@@ -39,18 +41,6 @@ MissionProcessor::MissionProcessor(ITargetProvider* provider, IBallisticSolver* 
   , solver_(solver)
   , loader_(loader)
 {
-}
-
-MissionProcessor::~MissionProcessor()
-{
-  delete[] firePoint_;  // NOLINT(cppcoreguidelines-owning-memory)
-  firePoint_ = nullptr;
-  delete[] totalTime_;  // NOLINT(cppcoreguidelines-owning-memory)
-  totalTime_ = nullptr;
-  delete[] predictedAll_;  // NOLINT(cppcoreguidelines-owning-memory)
-  predictedAll_ = nullptr;
-  delete[] simSteps_;  // NOLINT(cppcoreguidelines-owning-memory)
-  simSteps_ = nullptr;
 }
 
 bool MissionProcessor::init(const std::string& configSource)
@@ -82,13 +72,13 @@ bool MissionProcessor::init(const std::string& configSource)
   currentTime_ = 0.0f;
   steps_ = 0;
 
-  firePoint_ = new Coord[targetCount_];     // NOLINT(cppcoreguidelines-owning-memory)
-  totalTime_ = new float[targetCount_];     // NOLINT(cppcoreguidelines-owning-memory)
-  predictedAll_ = new Coord[targetCount_];  // NOLINT(cppcoreguidelines-owning-memory)
-  simSteps_ = new SimStep[kMaxSteps];       // NOLINT(cppcoreguidelines-owning-memory)
+  firePoint_.resize(targetCount_);
+  totalTime_.resize(targetCount_);
+  predictedAll_.resize(targetCount_);
+  simSteps_.reserve(kMaxSteps);
 
   Target firstTarget = provider_->getTarget(0);
-  Coord firstPos = interpolateTarget(firstTarget.positions, firstTarget.timeSteps, firstTarget.arrayTimeStep, 0.0f);
+  Coord firstPos = interpolateTarget(firstTarget.positions, firstTarget.arrayTimeStep, 0.0f);
   bool solverOk = true;
   float dummyH = 0.0f;
   solver_->solve(dronePos_, firstPos, config_.altitude, config_.accelPath, config_.attackSpeed, ammo_, dummyH, solverOk);
@@ -112,8 +102,8 @@ void MissionProcessor::step()
 
   for (int i = 0; i < targetCount_; i++) {
     Target tgt = provider_->getTarget(i);
-    Coord target = interpolateTarget(tgt.positions, tgt.timeSteps, tgt.arrayTimeStep, currentTime_);
-    Coord vel = velocity(tgt.positions, tgt.timeSteps, tgt.arrayTimeStep, currentTime_, config_.simTimeStep);
+    Coord target = interpolateTarget(tgt.positions, tgt.arrayTimeStep, currentTime_);
+    Coord vel = velocity(tgt.positions, tgt.arrayTimeStep, currentTime_, config_.simTimeStep);
 
     float D = sqrtf(powf(target.x - dronePos_.x, 2) + powf(target.y - dronePos_.y, 2));
     if (fabsf(D) < 1e-9f) {
@@ -220,13 +210,15 @@ void MissionProcessor::step()
       break;
   }
 
-  simSteps_[steps_].pos = dronePos_;
-  simSteps_[steps_].direction = dir_;
-  simSteps_[steps_].state = droneState_;
-  simSteps_[steps_].targetIdx = currentTarget;
-  simSteps_[steps_].dropPoint = firePoint_[currentTarget];
-  simSteps_[steps_].aimPoint = dronePos_ + Coord{cosf(dir_), sinf(dir_)} * h;
-  simSteps_[steps_].predictedTarget = predictedAll_[currentTarget];
+  SimStep newStep{};
+  newStep.pos = dronePos_;
+  newStep.direction = dir_;
+  newStep.state = droneState_;
+  newStep.targetIdx = currentTarget;
+  newStep.dropPoint = firePoint_[currentTarget];
+  newStep.aimPoint = dronePos_ + Coord{cosf(dir_), sinf(dir_)} * h;
+  newStep.predictedTarget = predictedAll_[currentTarget];
+  simSteps_.push_back(newStep);
   steps_++;
 
   if (sqrtf(powf(dronePos_.x - firePoint_[currentTarget].x, 2) + powf(dronePos_.y - firePoint_[currentTarget].y, 2)) < config_.hitRadius) {
@@ -262,7 +254,7 @@ int MissionProcessor::getStepCount() const
   return steps_;
 }
 
-const SimStep* MissionProcessor::getSteps() const
+const std::vector<SimStep>& MissionProcessor::getSteps() const
 {
   return simSteps_;
 }

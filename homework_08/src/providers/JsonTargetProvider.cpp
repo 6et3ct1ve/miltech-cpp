@@ -6,10 +6,7 @@
 #include <iostream>
 
 JsonTargetProvider::JsonTargetProvider(const std::string& path, float arrayTimeStep)
-  : targets_(nullptr)
-  , targetCount_(0)
-  , timeSteps_(0)
-  , arrayTimeStep_(arrayTimeStep)
+  : arrayTimeStep_(arrayTimeStep)
   , ok_(false)
 {
   std::ifstream targetsFile(path);
@@ -26,44 +23,32 @@ JsonTargetProvider::JsonTargetProvider(const std::string& path, float arrayTimeS
   }
   targetsFile.close();
 
-  targetCount_ = targetsCoords["targetCount"];
-  timeSteps_ = targetsCoords["timeSteps"];
-  if (targetCount_ == 0 || timeSteps_ == 0) {
+  int targetCount = targetsCoords["targetCount"];
+  int timeSteps = targetsCoords["timeSteps"];
+  if (targetCount == 0 || timeSteps == 0) {
     std::cerr << "Coord target format error\n";
     return;
   }
 
-  targets_ = new Coord*[targetCount_];  // NOLINT(cppcoreguidelines-owning-memory)
-  for (int i = 0; i < targetCount_; i++) {
-    targets_[i] = new Coord[timeSteps_];  // NOLINT(cppcoreguidelines-owning-memory, cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    for (int j = 0; j < timeSteps_; j++) {
-      targets_[i][j].x = targetsCoords["targets"][i]["positions"][j]["x"];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-      targets_[i][j].y = targetsCoords["targets"][i]["positions"][j]["y"];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+  targets_.resize(targetCount);
+  for (int i = 0; i < targetCount; i++) {
+    targets_[i].resize(timeSteps);
+    for (int j = 0; j < timeSteps; j++) {
+      targets_[i][j].x = targetsCoords["targets"][i]["positions"][j]["x"];
+      targets_[i][j].y = targetsCoords["targets"][i]["positions"][j]["y"];
     }
   }
   ok_ = true;
 }
 
-JsonTargetProvider::~JsonTargetProvider()
-{
-  if (targets_ != nullptr) {
-    for (int i = 0; i < targetCount_; i++) {
-      delete[] targets_[i];   // NOLINT(cppcoreguidelines-owning-memory, cppcoreguidelines-pro-bounds-pointer-arithmetic)
-      targets_[i] = nullptr;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    }
-    delete[] targets_;
-    targets_ = nullptr;
-  }
-}
-
 int JsonTargetProvider::getTargetCount()  // NOLINT(modernize-use-trailing-return-type)
 {
-  return targetCount_;
+  return static_cast<int>(targets_.size());
 }
 
 Target JsonTargetProvider::getTarget(int index)  // NOLINT(modernize-use-trailing-return-type)
 {
-  return Target{targets_[index], timeSteps_, arrayTimeStep_};  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+  return Target{targets_[index], arrayTimeStep_};
 }
 
 bool JsonTargetProvider::isValid() const  // NOLINT(modernize-use-trailing-return-type)

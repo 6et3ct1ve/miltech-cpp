@@ -5,6 +5,7 @@
 #include "interfaces/ITargetProvider.h"
 #include "interfaces/IBallisticSolver.h"
 #include <string>
+#include <vector>
 
 constexpr int kMaxSteps = 10000;
 
@@ -15,15 +16,14 @@ public:
   MissionProcessor& operator=(const MissionProcessor&) = delete;  // NOLINT(modernize-use-trailing-return-type)
   MissionProcessor(MissionProcessor&&) = delete;
   MissionProcessor& operator=(MissionProcessor&&) = delete;  // NOLINT(modernize-use-trailing-return-type)
-  ~MissionProcessor();
 
   bool init(const std::string& configSource);  // NOLINT(modernize-use-trailing-return-type)
   [[nodiscard]] bool hasNext() const;          // NOLINT(modernize-use-trailing-return-type)
   void step();
   void reset();
   void changeSolver(IBallisticSolver* solver);
-  [[nodiscard]] int getStepCount() const;         // NOLINT(modernize-use-trailing-return-type)
-  [[nodiscard]] const SimStep* getSteps() const;  // NOLINT(modernize-use-trailing-return-type)
+  [[nodiscard]] int getStepCount() const;                      // NOLINT(modernize-use-trailing-return-type)
+  [[nodiscard]] const std::vector<SimStep>& getSteps() const;  // NOLINT(modernize-use-trailing-return-type)
 
 private:
   ITargetProvider* provider_;
@@ -45,9 +45,9 @@ private:
   bool finished_ = false;
   int targetCount_ = 0;
 
-  Coord* firePoint_ = nullptr;
-  float* totalTime_ = nullptr;
-  Coord* predictedAll_ = nullptr;
+  std::vector<Coord> firePoint_;
+  std::vector<float> totalTime_;
+  std::vector<Coord> predictedAll_;
 
-  SimStep* simSteps_ = nullptr;
+  std::vector<SimStep> simSteps_;
 };

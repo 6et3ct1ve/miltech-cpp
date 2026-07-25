@@ -42,20 +42,15 @@ int main(int argc, char* argv[])  // NOLINT(modernize-use-trailing-return-type)
   out["totalSteps"] = mission.getStepCount();
   out["steps"] = nlohmann::json::array();
 
-  const SimStep* steps = mission.getSteps();
-  for (int i = 0; i < mission.getStepCount(); i++) {
+  for (const auto& s : mission.getSteps()) {
     nlohmann::json step;
-    step["position"] = {{"x", steps[i].pos.x}, {"y", steps[i].pos.y}};  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    step["direction"] = steps[i].direction;                             // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    step["state"] = static_cast<int>(steps[i].state);                   // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    step["targetIndex"] = steps[i].targetIdx;                           // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    step["dropPoint"] = {{"x", steps[i].dropPoint.x}, {"y", steps[i].dropPoint.y}};
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    step["aimPoint"] = {{"x", steps[i].aimPoint.x}, {"y", steps[i].aimPoint.y}};
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    step["predictedTarget"] = {{"x", steps[i].predictedTarget.x}, {"y", steps[i].predictedTarget.y}};
+    step["position"] = {{"x", s.pos.x}, {"y", s.pos.y}};
+    step["direction"] = s.direction;
+    step["state"] = static_cast<int>(s.state);
+    step["targetIndex"] = s.targetIdx;
+    step["dropPoint"] = {{"x", s.dropPoint.x}, {"y", s.dropPoint.y}};
+    step["aimPoint"] = {{"x", s.aimPoint.x}, {"y", s.aimPoint.y}};
+    step["predictedTarget"] = {{"x", s.predictedTarget.x}, {"y", s.predictedTarget.y}};
     out["steps"].push_back(step);
   }
 
