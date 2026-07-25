@@ -15,6 +15,7 @@ _deps/
 !homework_06/Makefile
 !homework_07/Makefile
 homework_07/data/simulation.json
+!homework_08/Makefile
 
 
 # Мінімальний набір compiled/debug артефактів для C++ прикладів.
