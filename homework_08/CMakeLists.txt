@@ -21,7 +21,7 @@ target_compile_options(MissionProcessor PRIVATE -Wall -Wextra -pedantic)
 add_library(Factory src/config/ComponentFactory.cpp)
 target_include_directories(Factory PUBLIC include)
 target_link_libraries(Factory PUBLIC ConfigLoader TargetProvider BallisticSolver)
-target_compile_options(factory PRIVATE -Wall -Wextra -pedantic)
+target_compile_options(Factory PRIVATE -Wall -Wextra -pedantic)
 
 add_executable(MissionCheck src/main.cpp)
 target_link_libraries(MissionCheck PRIVATE MissionProcessor Factory)
