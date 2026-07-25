@@ -1,10 +1,11 @@
 #pragma once
 
 #include "interfaces/ITargetProvider.h"
+#include <string>
 
 class JsonTargetProvider : public ITargetProvider {
 public:
-  JsonTargetProvider(const char* path, float arrayTimeStep);
+  JsonTargetProvider(const std::string& path, float arrayTimeStep);
   JsonTargetProvider(const JsonTargetProvider&) = delete;
   JsonTargetProvider& operator=(const JsonTargetProvider&) = delete;  // NOLINT(modernize-use-trailing-return-type)
   JsonTargetProvider(JsonTargetProvider&&) = delete;

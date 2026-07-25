@@ -4,6 +4,7 @@
 #include "interfaces/IConfigLoader.h"
 #include "interfaces/ITargetProvider.h"
 #include "interfaces/IBallisticSolver.h"
+#include <string>
 
 constexpr int kMaxSteps = 10000;
 
@@ -16,8 +17,8 @@ public:
   MissionProcessor& operator=(MissionProcessor&&) = delete;  // NOLINT(modernize-use-trailing-return-type)
   ~MissionProcessor();
 
-  bool init(const char* configSource);  // NOLINT(modernize-use-trailing-return-type)
-  [[nodiscard]] bool hasNext() const;   // NOLINT(modernize-use-trailing-return-type)
+  bool init(const std::string& configSource);  // NOLINT(modernize-use-trailing-return-type)
+  [[nodiscard]] bool hasNext() const;          // NOLINT(modernize-use-trailing-return-type)
   void step();
   void reset();
   void changeSolver(IBallisticSolver* solver);

@@ -1,18 +1,19 @@
 #pragma once
 
 #include "interfaces/IConfigLoader.h"
+#include <string>
 
 class FileConfigLoader : public IConfigLoader {
 public:
-  FileConfigLoader(const char* configPath, const char* ammoPath);
+  FileConfigLoader(std::string configPath, std::string ammoPath);
 
   bool load() override;                 // NOLINT(modernize-use-trailing-return-type)
   DroneConfig getConfig() override;     // NOLINT(modernize-use-trailing-return-type)
   AmmoParams getAmmoParams() override;  // NOLINT(modernize-use-trailing-return-type)
 
 private:
-  const char* configPath_;
-  const char* ammoPath_;
+  std::string configPath_;
+  std::string ammoPath_;
   DroneConfig config_;
   AmmoParams ammoParams_;
 };

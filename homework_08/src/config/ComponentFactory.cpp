@@ -14,7 +14,8 @@ IBallisticSolver* createSolver(SolverType type)  // NOLINT(modernize-use-trailin
   }
 }
 
-ITargetProvider* createProvider(ProviderType type, const char* path, float arrayTimeStep)  // NOLINT(modernize-use-trailing-return-type)
+// NOLINTNEXTLINE(modernize-use-trailing-return-type)
+ITargetProvider* createProvider(ProviderType type, const std::string& path, float arrayTimeStep)
 {
   switch (type) {
     case ProviderType::JSON:
@@ -24,7 +25,8 @@ ITargetProvider* createProvider(ProviderType type, const char* path, float array
   }
 }
 
-IConfigLoader* createLoader(LoaderType type, const char* configPath, const char* ammoPath)  // NOLINT(modernize-use-trailing-return-type)
+// NOLINTNEXTLINE(modernize-use-trailing-return-type)
+IConfigLoader* createLoader(LoaderType type, const std::string& configPath, const std::string& ammoPath)
 {
   switch (type) {
     case LoaderType::FILE:

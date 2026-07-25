@@ -4,7 +4,7 @@
 #include "providers/JsonTargetProvider.h"
 #include <gtest/gtest.h>
 
-// NOLINTBEGIN(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
 TEST(Hw08Coord, Addition)
 {
@@ -100,4 +100,4 @@ TEST(Hw08JsonTargetProvider, MissingFileIsInvalid)
   JsonTargetProvider provider("nonexistent_targets.json", 1.0f);
   EXPECT_FALSE(provider.isValid());
 }
-// NOLINTEND(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+// NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)

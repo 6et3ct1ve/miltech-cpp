@@ -5,7 +5,7 @@
 #include <fstream>
 #include <iostream>
 
-JsonTargetProvider::JsonTargetProvider(const char* path, float arrayTimeStep)
+JsonTargetProvider::JsonTargetProvider(const std::string& path, float arrayTimeStep)
   : targets_(nullptr)
   , targetCount_(0)
   , timeSteps_(0)

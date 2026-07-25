@@ -3,13 +3,12 @@
 #include "Logging.h"
 
 #include <fstream>
-#include <cstring>
 #include <cmath>
 #include <iostream>
 
-FileConfigLoader::FileConfigLoader(const char* configPath, const char* ammoPath)
-  : configPath_(configPath)
-  , ammoPath_(ammoPath)
+FileConfigLoader::FileConfigLoader(std::string configPath, std::string ammoPath)
+  : configPath_(std::move(configPath))
+  , ammoPath_(std::move(ammoPath))
   , config_{}
   , ammoParams_{}
 {
@@ -39,9 +38,7 @@ bool FileConfigLoader::load()  // NOLINT(modernize-use-trailing-return-type)
   config_.accelPath = droneConfig["drone"]["accelerationPath"];
   config_.angularSpeed = droneConfig["drone"]["angularSpeed"];
   config_.turnThreshold = droneConfig["drone"]["turnThreshold"];
-  std::string tmp = droneConfig["ammo"].get<std::string>();
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay, cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
-  std::strncpy(config_.ammoName, tmp.c_str(), 31);
+  config_.ammoName = droneConfig["ammo"].get<std::string>();
   config_.simTimeStep = droneConfig["simulation"]["timeStep"];
   config_.hitRadius = droneConfig["simulation"]["hitRadius"];
   config_.arrayTimeStep = droneConfig["targetArrayTimeStep"];
@@ -76,16 +73,14 @@ bool FileConfigLoader::load()  // NOLINT(modernize-use-trailing-return-type)
 
   bool found = false;
   for (int i = 0; i < ammoCount; i++) {
-    std::string name = ammoParams[i]["name"].get<std::string>();  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-    if (std::strcmp(config_.ammoName, name.c_str()) == 0) {       // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,
-                                                                  // cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
-      std::strncpy(ammoParams_.name, name.c_str(), 31);           // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,
-                                                                  // cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+    std::string name = ammoParams[i]["name"].get<std::string>();
+    if (config_.ammoName == name) {
+      ammoParams_.name = name;
       ammoParams_.mass = ammoParams[i]["mass"];
       ammoParams_.drag = ammoParams[i]["drag"];
       ammoParams_.lift = ammoParams[i]["lift"];
       found = true;
-      LOG("Ammo found>" << ammoParams_.name);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+      LOG("Ammo found>" << ammoParams_.name);
       break;
     }
   }

@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <string>
 
 // NOLINTBEGIN(modernize-use-trailing-return-type,cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers,cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
@@ -52,9 +53,9 @@ MissionProcessor::~MissionProcessor()
   simSteps_ = nullptr;
 }
 
-bool MissionProcessor::init(const char* configSource)
+bool MissionProcessor::init(const std::string& configSource)
 {
-  if (configSource == nullptr) {
+  if (configSource.empty()) {
     return false;
   }
 

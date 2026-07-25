@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <string>
 
 // NOLINTBEGIN(modernize-use-trailing-return-type, cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers) - epsilon comparisons;
 // trailing return type is stylistic only
@@ -55,20 +56,18 @@ struct Target {
   float arrayTimeStep;
 };
 
-struct AmmoParams {  // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-magic-numbers,
-                     // readability-magic-numbers)
-  char name[32];     // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-magic-numbers,
-                     // readability-magic-numbers)
+struct AmmoParams {
+  std::string name;
   float mass, drag, lift;
 };
+
 struct DroneConfig {
   Coord startPos;
   float altitude;
   float initialDir;
   float attackSpeed;
   float accelPath;
-  char ammoName[32];  // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-magic-numbers,
-                      // readability-magic-numbers)
+  std::string ammoName;
   float arrayTimeStep;
   float simTimeStep;
   float hitRadius;
