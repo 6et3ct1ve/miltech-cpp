@@ -13,9 +13,17 @@ add_library(BallisticSolver src/solvers/AnalyticalSolver.cpp)
 target_include_directories(BallisticSolver PUBLIC include)
 target_compile_options(BallisticSolver PRIVATE -Wall -Wextra -pedantic)
 
+add_library(
+    DroneStates
+    src/states/StoppedState.cpp src/states/AcceleratingState.cpp src/states/DeceleratingState.cpp
+    src/states/TurningState.cpp src/states/MovingState.cpp)
+target_include_directories(DroneStates PUBLIC include)
+target_compile_options(DroneStates PRIVATE -Wall -Wextra -pedantic)
+
 add_library(MissionProcessor src/MissionProcessor.cpp)
 target_include_directories(MissionProcessor PUBLIC include)
-target_link_libraries(MissionProcessor PUBLIC ConfigLoader TargetProvider BallisticSolver)
+target_link_libraries(MissionProcessor PUBLIC ConfigLoader TargetProvider BallisticSolver
+                                              DroneStates)
 target_compile_options(MissionProcessor PRIVATE -Wall -Wextra -pedantic)
 
 add_library(Factory src/config/ComponentFactory.cpp)
@@ -37,7 +45,14 @@ if(NOT CMAKE_CROSSCOMPILING)
 
     add_executable(MissionTests tests/MissionTests.cpp)
     target_include_directories(MissionTests PRIVATE include)
-    target_link_libraries(MissionTests PRIVATE ConfigLoader TargetProvider BallisticSolver
-                                               MissionProcessor Factory GTest::gtest_main)
+    target_link_libraries(
+        MissionTests
+        PRIVATE ConfigLoader
+                TargetProvider
+                BallisticSolver
+                DroneStates
+                MissionProcessor
+                Factory
+                GTest::gtest_main)
     gtest_discover_tests(MissionTests DISCOVERY_MODE PRE_TEST)
 endif()

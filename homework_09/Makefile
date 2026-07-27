@@ -1,10 +1,12 @@
 CXX_FILES = include/Types.h include/MissionProcessor.h include/Logging.h \
-            include/interfaces/ITargetProvider.h include/interfaces/IBallisticSolver.h include/interfaces/IConfigLoader.h \
+            include/interfaces/ITargetProvider.h include/interfaces/IBallisticSolver.h include/interfaces/IConfigLoader.h include/interfaces/IDroneState.h \
             include/solvers/AnalyticalSolver.h include/providers/JsonTargetProvider.h \
             include/config/FileConfigLoader.h include/config/ComponentFactory.h \
+            include/states/StoppedState.h include/states/AcceleratingState.h include/states/DeceleratingState.h include/states/TurningState.h include/states/MovingState.h \
             src/MissionProcessor.cpp src/main.cpp \
             src/solvers/AnalyticalSolver.cpp src/providers/JsonTargetProvider.cpp \
             src/config/FileConfigLoader.cpp src/config/ComponentFactory.cpp \
+            src/states/StoppedState.cpp src/states/AcceleratingState.cpp src/states/DeceleratingState.cpp src/states/TurningState.cpp src/states/MovingState.cpp \
             tests/MissionTests.cpp
 CMAKE_FILE = CMakeLists.txt
 
