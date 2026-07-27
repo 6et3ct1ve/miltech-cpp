@@ -75,12 +75,20 @@ struct DroneConfig {
   float turnThreshold;
 };
 
-enum class DroneState { STOPPED, ACCELERATING, DECELERATING, TURNING, MOVING };
+struct DroneContext {
+  Coord pos;
+  float direction = 0.0f;
+  float speed = 0.0f;
+  float acceleration = 0.0f;
+  float newDir = 0.0f;
+  float deltaAngle = 0.0f;
+  const DroneConfig* config = nullptr;
+};
 
 struct SimStep {
   Coord pos;
   float direction;
-  DroneState state;
+  std::string state;
   int targetIdx;
   Coord dropPoint;
   Coord aimPoint;
