@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <string>
 #include "json.hpp"
 
 int main(int argc, char* argv[])  // NOLINT(modernize-use-trailing-return-type)
@@ -11,24 +12,31 @@ int main(int argc, char* argv[])  // NOLINT(modernize-use-trailing-return-type)
   const char* configPath = (argc > 1) ? argv[1] : "config.json";    // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   const char* ammoPath = (argc > 2) ? argv[2] : "ammo.json";        // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   const char* targetsPath = (argc > 3) ? argv[3] : "targets.json";  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+  const char* solverType = (argc > 4) ? argv[4] : "analytical";
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+  const char* tablePath = (argc > 5) ? argv[5] : "ballistic_table.txt";
 
-  IConfigLoader* loader = createLoader(LoaderType::FILE, configPath, ammoPath);
+  auto loader = createLoader(LoaderType::FILE, configPath, ammoPath);
   if (!loader->load()) {
-    delete loader;  // NOLINT(cppcoreguidelines-owning-memory)
     return 1;
   }
 
   DroneConfig config = loader->getConfig();
 
-  ITargetProvider* provider = createProvider(ProviderType::JSON, targetsPath, config.arrayTimeStep);
-  IBallisticSolver* solver = createSolver(SolverType::ANALYTICAL);
+  auto provider = createProvider(ProviderType::JSON, targetsPath, config.arrayTimeStep);
 
-  MissionProcessor mission(provider, solver, loader);
+  std::unique_ptr<IBallisticSolver> solver;
+  if (std::string(solverType) == "table") {
+    solver = createSolver(SolverType::TABLE, tablePath);
+  }
+  else {
+    solver = createSolver(SolverType::ANALYTICAL);
+  }
+
+  MissionProcessor mission(std::move(provider), std::move(solver), std::move(loader));
   if (!mission.init(configPath)) {
     std::cerr << "Mission init failed\n";
-    delete provider;  // NOLINT(cppcoreguidelines-owning-memory)
-    delete solver;    // NOLINT(cppcoreguidelines-owning-memory)
-    delete loader;    // NOLINT(cppcoreguidelines-owning-memory)
     return 1;
   }
 
@@ -46,7 +54,7 @@ int main(int argc, char* argv[])  // NOLINT(modernize-use-trailing-return-type)
     nlohmann::json step;
     step["position"] = {{"x", s.pos.x}, {"y", s.pos.y}};
     step["direction"] = s.direction;
-    step["state"] = static_cast<int>(s.state);
+    step["state"] = s.state;
     step["targetIndex"] = s.targetIdx;
     step["dropPoint"] = {{"x", s.dropPoint.x}, {"y", s.dropPoint.y}};
     step["aimPoint"] = {{"x", s.aimPoint.x}, {"y", s.aimPoint.y}};
@@ -57,17 +65,10 @@ int main(int argc, char* argv[])  // NOLINT(modernize-use-trailing-return-type)
   std::ofstream output("simulation.json");
   if (!output.is_open()) {
     std::cerr << "Unable to write output\n";
-    delete provider;  // NOLINT(cppcoreguidelines-owning-memory)
-    delete solver;    // NOLINT(cppcoreguidelines-owning-memory)
-    delete loader;    // NOLINT(cppcoreguidelines-owning-memory)
     return 1;
   }
   output << out.dump(2);
   output.close();
-
-  delete provider;  // NOLINT(cppcoreguidelines-owning-memory)
-  delete solver;    // NOLINT(cppcoreguidelines-owning-memory)
-  delete loader;    // NOLINT(cppcoreguidelines-owning-memory)
 
   std::cout << "Success\n";
   return 0;

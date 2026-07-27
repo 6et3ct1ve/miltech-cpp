@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(homework_08 CXX)
+project(homework_09 CXX)
 
 add_library(ConfigLoader src/config/FileConfigLoader.cpp)
 target_include_directories(ConfigLoader PUBLIC include)
@@ -9,13 +9,22 @@ add_library(TargetProvider src/providers/JsonTargetProvider.cpp)
 target_include_directories(TargetProvider PUBLIC include)
 target_compile_options(TargetProvider PRIVATE -Wall -Wextra -pedantic)
 
-add_library(BallisticSolver src/solvers/AnalyticalSolver.cpp)
+add_library(BallisticSolver src/solvers/AnalyticalSolver.cpp src/solvers/BallisticTable.cpp
+                            src/solvers/TableSolver.cpp)
 target_include_directories(BallisticSolver PUBLIC include)
 target_compile_options(BallisticSolver PRIVATE -Wall -Wextra -pedantic)
 
+add_library(
+    DroneStates
+    src/states/StoppedState.cpp src/states/AcceleratingState.cpp src/states/DeceleratingState.cpp
+    src/states/TurningState.cpp src/states/MovingState.cpp)
+target_include_directories(DroneStates PUBLIC include)
+target_compile_options(DroneStates PRIVATE -Wall -Wextra -pedantic)
+
 add_library(MissionProcessor src/MissionProcessor.cpp)
 target_include_directories(MissionProcessor PUBLIC include)
-target_link_libraries(MissionProcessor PUBLIC ConfigLoader TargetProvider BallisticSolver)
+target_link_libraries(MissionProcessor PUBLIC ConfigLoader TargetProvider BallisticSolver
+                                              DroneStates)
 target_compile_options(MissionProcessor PRIVATE -Wall -Wextra -pedantic)
 
 add_library(Factory src/config/ComponentFactory.cpp)
@@ -37,7 +46,14 @@ if(NOT CMAKE_CROSSCOMPILING)
 
     add_executable(MissionTests tests/MissionTests.cpp)
     target_include_directories(MissionTests PRIVATE include)
-    target_link_libraries(MissionTests PRIVATE ConfigLoader TargetProvider BallisticSolver
-                                               MissionProcessor Factory GTest::gtest_main)
+    target_link_libraries(
+        MissionTests
+        PRIVATE ConfigLoader
+                TargetProvider
+                BallisticSolver
+                DroneStates
+                MissionProcessor
+                Factory
+                GTest::gtest_main)
     gtest_discover_tests(MissionTests DISCOVERY_MODE PRE_TEST)
 endif()
