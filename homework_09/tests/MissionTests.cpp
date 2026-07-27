@@ -63,16 +63,16 @@ TEST(Hw08AnalyticalSolver, ComputesKnownDropPoint)
   float altitude = 100.0f;
   float accelPath = 50.0f;
   float attackSpeed = 15.0f;
-  AmmoParams ammo{"VOG-17", 0.35f, 0.07f, 0.0f};
+  AmmoParams ammo{"VOG-17", 0.35f, 0.004f, 0.0f};
   float h = 0.0f;
   bool ok = true;
 
   Coord result = solver.solve(dronePos, targetPos, altitude, accelPath, attackSpeed, ammo, h, ok);
 
   EXPECT_TRUE(ok);
-  EXPECT_NEAR(result.x, 253.684f, 0.1f);
-  EXPECT_NEAR(result.y, 169.122f, 0.1f);
-  EXPECT_NEAR(h, 55.665f, 0.1f);
+  EXPECT_NEAR(result.x, 244.605f, 0.1f);
+  EXPECT_NEAR(result.y, 163.070f, 0.1f);
+  EXPECT_NEAR(h, 66.576f, 0.1f);
 }
 
 TEST(Hw08AnalyticalSolver, SamePositionFails)
@@ -80,7 +80,7 @@ TEST(Hw08AnalyticalSolver, SamePositionFails)
   AnalyticalSolver solver;
   Coord dronePos{0.0f, 0.0f};
   Coord targetPos{0.0f, 0.0f};
-  AmmoParams ammo{"VOG-17", 0.35f, 0.07f, 0.0f};
+  AmmoParams ammo{"VOG-17", 0.35f, 0.004f, 0.0f};
   float h = 0.0f;
   bool ok = true;
 
