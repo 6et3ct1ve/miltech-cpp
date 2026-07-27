@@ -3,6 +3,8 @@
 
 #include <cmath>
 
+// NOLINTBEGIN(modernize-use-trailing-return-type)
+
 std::unique_ptr<IDroneState> MovingState::execute(DroneContext& ctx)
 {
   if (fabsf(ctx.deltaAngle) > ctx.config->turnThreshold) {
@@ -25,3 +27,5 @@ float MovingState::estimateTimeToStop(const DroneContext& ctx) const
 {
   return ctx.config->attackSpeed / ctx.acceleration;
 }
+
+// NOLINTEND(modernize-use-trailing-return-type)

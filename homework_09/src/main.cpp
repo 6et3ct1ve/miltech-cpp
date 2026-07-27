@@ -9,11 +9,13 @@
 
 int main(int argc, char* argv[])  // NOLINT(modernize-use-trailing-return-type)
 {
-  const char* configPath = (argc > 1) ? argv[1] : "config.json";         // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-  const char* ammoPath = (argc > 2) ? argv[2] : "ammo.json";             // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-  const char* targetsPath = (argc > 3) ? argv[3] : "targets.json";       // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-  const char* solverType = (argc > 4) ? argv[4] : "analytical";          // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-  const char* tablePath = (argc > 5) ? argv[5] : "ballistic_table.txt";  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+  const char* configPath = (argc > 1) ? argv[1] : "config.json";    // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+  const char* ammoPath = (argc > 2) ? argv[2] : "ammo.json";        // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+  const char* targetsPath = (argc > 3) ? argv[3] : "targets.json";  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+  const char* solverType = (argc > 4) ? argv[4] : "analytical";
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+  const char* tablePath = (argc > 5) ? argv[5] : "ballistic_table.txt";
 
   auto loader = createLoader(LoaderType::FILE, configPath, ammoPath);
   if (!loader->load()) {

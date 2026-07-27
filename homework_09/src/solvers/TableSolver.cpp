@@ -3,10 +3,12 @@
 #include <cmath>
 
 TableSolver::TableSolver(const std::string& tablePath)
+  : loaded_(table_.load(tablePath))
 {
-  loaded_ = table_.load(tablePath);
 }
 
+// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, modernize-use-trailing-return-type) - epsilon comparisons;
+// trailing return type is stylistic only
 Coord TableSolver::solve(
   Coord dronePos, Coord targetPos, float altitude, float accelPath, float attackSpeed, const AmmoParams& ammo, float& outH, bool& ok)
 {
@@ -44,8 +46,9 @@ Coord TableSolver::solve(
   float ratio = (D - result.hDist) / D;
   return tempPos + (targetPos - tempPos) * ratio;
 }
+// NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, modernize-use-trailing-return-type)
 
-bool TableSolver::isValid() const
+bool TableSolver::isValid() const  // NOLINT(modernize-use-trailing-return-type)
 {
   return loaded_;
 }

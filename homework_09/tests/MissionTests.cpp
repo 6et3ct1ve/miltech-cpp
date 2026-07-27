@@ -129,5 +129,7 @@ TEST(Hw09TableSolver, ComputesDropPointAtExactNode)
 
   EXPECT_TRUE(ok);
   EXPECT_NEAR(h, 2.8938f, 0.01f);
+  EXPECT_NEAR(result.x, 297.106f, 0.01f);
+  EXPECT_NEAR(result.y, 0.0f, 0.01f);
 }
 // NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)

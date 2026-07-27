@@ -4,6 +4,9 @@
 #include <array>
 #include <fstream>
 
+// NOLINTBEGIN(modernize-use-trailing-return-type, cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers,
+// cppcoreguidelines-pro-bounds-constant-array-index)
+
 namespace {
 
 struct Interp {
@@ -124,8 +127,8 @@ BallisticTable::Result BallisticTable::lookup(float z0, float v0, float m, float
   for (int a = 0; a < 2; a++) {
     for (int b = 0; b < 2; b++) {
       for (int c = 0; c < 2; c++) {
-        size_t wi = static_cast<size_t>((a * 4) + (b * 2) + c);
-        size_t vi0 = static_cast<size_t>((a * 8) + (b * 4) + (c * 2));
+        auto wi = static_cast<size_t>((a * 4) + (b * 2) + c);
+        auto vi0 = static_cast<size_t>((a * 8) + (b * 4) + (c * 2));
         w[wi] = lerp(v[vi0], v[vi0 + 1], id.frac);
       }
     }
@@ -134,18 +137,20 @@ BallisticTable::Result BallisticTable::lookup(float z0, float v0, float m, float
   std::array<Result, 4> u{};
   for (int a = 0; a < 2; a++) {
     for (int b = 0; b < 2; b++) {
-      size_t ui = static_cast<size_t>((a * 2) + b);
-      size_t wi0 = static_cast<size_t>((a * 4) + (b * 2));
+      auto ui = static_cast<size_t>((a * 2) + b);
+      auto wi0 = static_cast<size_t>((a * 4) + (b * 2));
       u[ui] = lerp(w[wi0], w[wi0 + 1], im.frac);
     }
   }
 
   std::array<Result, 2> s{};
   for (int a = 0; a < 2; a++) {
-    size_t si = static_cast<size_t>(a);
-    size_t ui0 = static_cast<size_t>(a * 2);
+    auto si = static_cast<size_t>(a);
+    auto ui0 = static_cast<size_t>(a * 2);
     s[si] = lerp(u[ui0], u[ui0 + 1], iv.frac);
   }
 
   return lerp(s[0], s[1], iz.frac);
 }
+// NOLINTEND(modernize-use-trailing-return-type, cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers,
+// cppcoreguidelines-pro-bounds-constant-array-index)

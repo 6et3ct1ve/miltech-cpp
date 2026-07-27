@@ -3,6 +3,8 @@
 
 #include <cmath>
 
+// NOLINTBEGIN(modernize-use-trailing-return-type)
+
 std::unique_ptr<IDroneState> AcceleratingState::execute(DroneContext& ctx)
 {
   ctx.speed += ctx.acceleration * ctx.config->simTimeStep;
@@ -31,3 +33,5 @@ float AcceleratingState::estimateTimeToStop(const DroneContext& ctx) const
 {
   return ctx.speed / ctx.acceleration;
 }
+
+// NOLINTEND(modernize-use-trailing-return-type)
