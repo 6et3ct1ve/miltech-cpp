@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(homework_08 CXX)
+project(homework_09 CXX)
 
 add_library(ConfigLoader src/config/FileConfigLoader.cpp)
 target_include_directories(ConfigLoader PUBLIC include)
