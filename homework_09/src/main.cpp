@@ -42,7 +42,7 @@ int main(int argc, char* argv[])  // NOLINT(modernize-use-trailing-return-type)
     nlohmann::json step;
     step["position"] = {{"x", s.pos.x}, {"y", s.pos.y}};
     step["direction"] = s.direction;
-    step["state"] = static_cast<int>(s.state);
+    step["state"] = s.state;
     step["targetIndex"] = s.targetIdx;
     step["dropPoint"] = {{"x", s.dropPoint.x}, {"y", s.dropPoint.y}};
     step["aimPoint"] = {{"x", s.aimPoint.x}, {"y", s.aimPoint.y}};
