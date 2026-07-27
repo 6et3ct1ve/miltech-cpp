@@ -4,13 +4,16 @@
 
 #include <fstream>
 #include <iostream>
+#include <string>
 #include "json.hpp"
 
 int main(int argc, char* argv[])  // NOLINT(modernize-use-trailing-return-type)
 {
-  const char* configPath = (argc > 1) ? argv[1] : "config.json";    // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-  const char* ammoPath = (argc > 2) ? argv[2] : "ammo.json";        // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-  const char* targetsPath = (argc > 3) ? argv[3] : "targets.json";  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+  const char* configPath = (argc > 1) ? argv[1] : "config.json";         // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+  const char* ammoPath = (argc > 2) ? argv[2] : "ammo.json";             // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+  const char* targetsPath = (argc > 3) ? argv[3] : "targets.json";       // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+  const char* solverType = (argc > 4) ? argv[4] : "analytical";          // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+  const char* tablePath = (argc > 5) ? argv[5] : "ballistic_table.txt";  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
   auto loader = createLoader(LoaderType::FILE, configPath, ammoPath);
   if (!loader->load()) {
@@ -20,7 +23,14 @@ int main(int argc, char* argv[])  // NOLINT(modernize-use-trailing-return-type)
   DroneConfig config = loader->getConfig();
 
   auto provider = createProvider(ProviderType::JSON, targetsPath, config.arrayTimeStep);
-  auto solver = createSolver(SolverType::ANALYTICAL);
+
+  std::unique_ptr<IBallisticSolver> solver;
+  if (std::string(solverType) == "table") {
+    solver = createSolver(SolverType::TABLE, tablePath);
+  }
+  else {
+    solver = createSolver(SolverType::ANALYTICAL);
+  }
 
   MissionProcessor mission(std::move(provider), std::move(solver), std::move(loader));
   if (!mission.init(configPath)) {
