@@ -4,6 +4,7 @@
 #include "interfaces/IConfigLoader.h"
 #include "interfaces/ITargetProvider.h"
 #include "interfaces/IBallisticSolver.h"
+#include "interfaces/IDroneState.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -32,6 +33,7 @@ private:
   std::unique_ptr<ITargetProvider> provider_;
   std::unique_ptr<IBallisticSolver> solver_;
   std::unique_ptr<IConfigLoader> loader_;
+  std::unique_ptr<IDroneState> currentState_;
 
   DroneConfig config_{};
   AmmoParams ammo_{};
@@ -40,7 +42,6 @@ private:
   float dir_ = 0.0f;
   float speed_ = 0.0f;
   float acceleration_ = 0.0f;
-  DroneState droneState_ = DroneState::STOPPED;
   int prevTarget_ = -1;
   float currentTime_ = 0.0f;
   int steps_ = 0;

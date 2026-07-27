@@ -3,6 +3,8 @@
 #include "interfaces/IConfigLoader.h"
 #include "Logging.h"
 #include "interfaces/ITargetProvider.h"
+#include "states/StoppedState.h"
+#include "states/MovingState.h"
 
 #include <cmath>
 #include <iostream>
@@ -29,11 +31,6 @@ Coord velocity(std::span<const Coord> target, float arrayTimeStep, float current
   return d / simTimeStep;
 }
 
-float sign(float delta)
-{
-  return (fabsf(delta) < 1e-9f) ? 0.0f : (delta > 0) ? 1.0f : -1.0f;
-}
-
 }  // namespace
 
 MissionProcessor::MissionProcessor(std::unique_ptr<ITargetProvider> provider,
@@ -42,6 +39,7 @@ MissionProcessor::MissionProcessor(std::unique_ptr<ITargetProvider> provider,
   : provider_(std::move(provider))
   , solver_(std::move(solver))
   , loader_(std::move(loader))
+  , currentState_(std::make_unique<StoppedState>())
 {
 }
 
@@ -69,7 +67,7 @@ bool MissionProcessor::init(const std::string& configSource)
   dronePos_ = config_.startPos;
   dir_ = config_.initialDir;
   speed_ = config_.attackSpeed;
-  droneState_ = DroneState::MOVING;
+  currentState_ = std::make_unique<MovingState>();
   prevTarget_ = -1;
   currentTime_ = 0.0f;
   steps_ = 0;
@@ -150,72 +148,38 @@ void MissionProcessor::step()
   while (deltaAngle < -M_PI)
     deltaAngle += 2 * M_PI;
 
+  DroneContext ctx;
+  ctx.pos = dronePos_;
+  ctx.direction = dir_;
+  ctx.speed = speed_;
+  ctx.acceleration = acceleration_;
+  ctx.newDir = newDir;
+  ctx.deltaAngle = deltaAngle;
+  ctx.config = &config_;
+
   if (currentTarget != prevTarget_) {
-    float timeToStop = 0.0f;
-    switch (droneState_) {
-      case DroneState::STOPPED:
-        timeToStop = 0;
-        break;
-      case DroneState::MOVING:
-        timeToStop = config_.attackSpeed / acceleration_;
-        break;
-      case DroneState::ACCELERATING:
-        timeToStop = speed_ / acceleration_;
-        break;
-      case DroneState::TURNING:
-        timeToStop = fabsf(deltaAngle) / config_.angularSpeed;
-        break;
-      case DroneState::DECELERATING:
-        timeToStop = speed_ / acceleration_;
-        break;
-    }
+    float timeToStop = currentState_->estimateTimeToStop(ctx);
     totalTime_[currentTarget] += timeToStop;
     prevTarget_ = currentTarget;
   }
 
-  if (fabsf(deltaAngle) > config_.turnThreshold && droneState_ == DroneState::MOVING) {
-    droneState_ = DroneState::DECELERATING;
+  constexpr int kMaxTransitionsPerStep = 5;
+  for (int guard = 0; guard < kMaxTransitionsPerStep; guard++) {
+    auto next = currentState_->execute(ctx);
+    if (!next) {
+      break;
+    }
+    currentState_ = std::move(next);
   }
 
-  switch (droneState_) {
-    case DroneState::MOVING:
-      dir_ = newDir;
-      dronePos_.x += cosf(dir_) * speed_ * config_.simTimeStep;
-      dronePos_.y += sinf(dir_) * speed_ * config_.simTimeStep;
-      break;
-    case DroneState::DECELERATING:
-      speed_ -= acceleration_ * config_.simTimeStep;
-      if (speed_ <= 0) {
-        speed_ = 0;
-        droneState_ = DroneState::STOPPED;
-      }
-      dronePos_.x += cosf(dir_) * speed_ * config_.simTimeStep;
-      dronePos_.y += sinf(dir_) * speed_ * config_.simTimeStep;
-      break;
-    case DroneState::STOPPED:
-      droneState_ = DroneState::TURNING;
-      break;
-    case DroneState::TURNING:
-      dir_ += sign(deltaAngle) * config_.angularSpeed * config_.simTimeStep;
-      if (fabsf(deltaAngle) <= config_.turnThreshold) {
-        droneState_ = DroneState::ACCELERATING;
-      }
-      break;
-    case DroneState::ACCELERATING:
-      speed_ += acceleration_ * config_.simTimeStep;
-      if (speed_ >= config_.attackSpeed) {
-        speed_ = config_.attackSpeed;
-        droneState_ = DroneState::MOVING;
-      }
-      dronePos_.x += cosf(dir_) * speed_ * config_.simTimeStep;
-      dronePos_.y += sinf(dir_) * speed_ * config_.simTimeStep;
-      break;
-  }
+  dronePos_ = ctx.pos;
+  dir_ = ctx.direction;
+  speed_ = ctx.speed;
 
   SimStep newStep{};
   newStep.pos = dronePos_;
   newStep.direction = dir_;
-  newStep.state = droneState_;
+  newStep.state = currentState_->name();
   newStep.targetIdx = currentTarget;
   newStep.dropPoint = firePoint_[currentTarget];
   newStep.aimPoint = dronePos_ + Coord{cosf(dir_), sinf(dir_)} * h;
@@ -230,7 +194,7 @@ void MissionProcessor::step()
   currentTime_ += config_.simTimeStep;
 
   DEBUG("Step " << steps_ << " pos = (" << dronePos_.x << "," << dronePos_.y << ") target = " << currentTarget
-                << " state = " << static_cast<int>(droneState_));
+                << " state = " << currentState_->name());
 }
 
 void MissionProcessor::reset()
@@ -238,7 +202,7 @@ void MissionProcessor::reset()
   dronePos_ = config_.startPos;
   dir_ = config_.initialDir;
   speed_ = config_.attackSpeed;
-  droneState_ = DroneState::MOVING;
+  currentState_ = std::make_unique<MovingState>();
   prevTarget_ = -1;
   currentTime_ = 0.0f;
   steps_ = 0;
