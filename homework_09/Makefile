@@ -15,7 +15,7 @@ format:
 	cmake-format -i $(CMAKE_FILE)
 
 lint:
-	run-clang-tidy -p ../build/debug -header-filter='homework_08/(src|include)/(?!json\.hpp).*' 'homework_08/' 2>&1 | grep "error:" || true
+	run-clang-tidy -p ../build/debug -header-filter='homework_09/(src|include)/(?!json\.hpp).*' 'homework_09/' 2>&1 | grep "error:" || true
 
 test:
 	cmake --build ../build/debug --target MissionTests
