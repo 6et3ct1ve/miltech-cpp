@@ -2,13 +2,16 @@
 #include "solvers/AnalyticalSolver.h"
 #include "providers/JsonTargetProvider.h"
 #include "config/FileConfigLoader.h"
+#include "solvers/TableSolver.h"
 
 // NOLINTNEXTLINE(modernize-use-trailing-return-type)
-std::unique_ptr<IBallisticSolver> createSolver(SolverType type)
+std::unique_ptr<IBallisticSolver> createSolver(SolverType type, const std::string& tablePath)
 {
   switch (type) {
     case SolverType::ANALYTICAL:
       return std::make_unique<AnalyticalSolver>();
+    case SolverType::TABLE:
+      return std::make_unique<TableSolver>(tablePath);
     default:
       return nullptr;
   }
