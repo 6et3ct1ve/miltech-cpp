@@ -9,7 +9,8 @@ add_library(TargetProvider src/providers/JsonTargetProvider.cpp)
 target_include_directories(TargetProvider PUBLIC include)
 target_compile_options(TargetProvider PRIVATE -Wall -Wextra -pedantic)
 
-add_library(BallisticSolver src/solvers/AnalyticalSolver.cpp)
+add_library(BallisticSolver src/solvers/AnalyticalSolver.cpp src/solvers/BallisticTable.cpp
+                            src/solvers/TableSolver.cpp)
 target_include_directories(BallisticSolver PUBLIC include)
 target_compile_options(BallisticSolver PRIVATE -Wall -Wextra -pedantic)
 
