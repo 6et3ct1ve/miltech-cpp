@@ -11,8 +11,7 @@ enum class ProviderType { JSON };
 enum class LoaderType { FILE };
 
 // NOLINTBEGIN(modernize-use-trailing-return-type)
-std::unique_ptr<IBallisticSolver> createSolver(SolverType type);
+std::unique_ptr<IBallisticSolver> createSolver(SolverType type, const std::string& tablePath = "");
 std::unique_ptr<ITargetProvider> createProvider(ProviderType type, const std::string& path, float arrayTimeStep);
 std::unique_ptr<IConfigLoader> createLoader(LoaderType type, const std::string& configPath, const std::string& ammoPath);
-std::unique_ptr<IBallisticSolver> createSolver(SolverType type, const std::string& tablePath = "");
 // NOLINTEND(modernize-use-trailing-return-type)
