@@ -3,34 +3,34 @@
 #include "providers/JsonTargetProvider.h"
 #include "config/FileConfigLoader.h"
 
-IBallisticSolver* createSolver(SolverType type)  // NOLINT(modernize-use-trailing-return-type)
+// NOLINTNEXTLINE(modernize-use-trailing-return-type)
+std::unique_ptr<IBallisticSolver> createSolver(SolverType type)
 {
   switch (type) {
     case SolverType::ANALYTICAL:
-      return new AnalyticalSolver();  // NOLINT(cppcoreguidelines-owning-memory) - raw pointer ownership documented via factory contract,
-                                      // caller deletes
+      return std::make_unique<AnalyticalSolver>();
     default:
       return nullptr;
   }
 }
 
 // NOLINTNEXTLINE(modernize-use-trailing-return-type)
-ITargetProvider* createProvider(ProviderType type, const std::string& path, float arrayTimeStep)
+std::unique_ptr<ITargetProvider> createProvider(ProviderType type, const std::string& path, float arrayTimeStep)
 {
   switch (type) {
     case ProviderType::JSON:
-      return new JsonTargetProvider(path, arrayTimeStep);  // NOLINT(cppcoreguidelines-owning-memory)
+      return std::make_unique<JsonTargetProvider>(path, arrayTimeStep);
     default:
       return nullptr;
   }
 }
 
 // NOLINTNEXTLINE(modernize-use-trailing-return-type)
-IConfigLoader* createLoader(LoaderType type, const std::string& configPath, const std::string& ammoPath)
+std::unique_ptr<IConfigLoader> createLoader(LoaderType type, const std::string& configPath, const std::string& ammoPath)
 {
   switch (type) {
     case LoaderType::FILE:
-      return new FileConfigLoader(configPath, ammoPath);  // NOLINT(cppcoreguidelines-owning-memory)
+      return std::make_unique<FileConfigLoader>(configPath, ammoPath);
     default:
       return nullptr;
   }
