@@ -36,10 +36,12 @@ float sign(float delta)
 
 }  // namespace
 
-MissionProcessor::MissionProcessor(ITargetProvider* provider, IBallisticSolver* solver, IConfigLoader* loader)
-  : provider_(provider)
-  , solver_(solver)
-  , loader_(loader)
+MissionProcessor::MissionProcessor(std::unique_ptr<ITargetProvider> provider,
+                                   std::unique_ptr<IBallisticSolver> solver,
+                                   std::unique_ptr<IConfigLoader> loader)
+  : provider_(std::move(provider))
+  , solver_(std::move(solver))
+  , loader_(std::move(loader))
 {
 }
 
@@ -244,11 +246,10 @@ void MissionProcessor::reset()
   finished_ = false;
 }
 
-void MissionProcessor::changeSolver(IBallisticSolver* solver)
+void MissionProcessor::changeSolver(std::unique_ptr<IBallisticSolver> solver)
 {
-  solver_ = solver;
+  solver_ = std::move(solver);
 }
-
 int MissionProcessor::getStepCount() const
 {
   return steps_;
