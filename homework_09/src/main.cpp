@@ -12,23 +12,19 @@ int main(int argc, char* argv[])  // NOLINT(modernize-use-trailing-return-type)
   const char* ammoPath = (argc > 2) ? argv[2] : "ammo.json";        // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   const char* targetsPath = (argc > 3) ? argv[3] : "targets.json";  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
-  IConfigLoader* loader = createLoader(LoaderType::FILE, configPath, ammoPath);
+  auto loader = createLoader(LoaderType::FILE, configPath, ammoPath);
   if (!loader->load()) {
-    delete loader;  // NOLINT(cppcoreguidelines-owning-memory)
     return 1;
   }
 
   DroneConfig config = loader->getConfig();
 
-  ITargetProvider* provider = createProvider(ProviderType::JSON, targetsPath, config.arrayTimeStep);
-  IBallisticSolver* solver = createSolver(SolverType::ANALYTICAL);
+  auto provider = createProvider(ProviderType::JSON, targetsPath, config.arrayTimeStep);
+  auto solver = createSolver(SolverType::ANALYTICAL);
 
-  MissionProcessor mission(provider, solver, loader);
+  MissionProcessor mission(std::move(provider), std::move(solver), std::move(loader));
   if (!mission.init(configPath)) {
     std::cerr << "Mission init failed\n";
-    delete provider;  // NOLINT(cppcoreguidelines-owning-memory)
-    delete solver;    // NOLINT(cppcoreguidelines-owning-memory)
-    delete loader;    // NOLINT(cppcoreguidelines-owning-memory)
     return 1;
   }
 
@@ -57,17 +53,10 @@ int main(int argc, char* argv[])  // NOLINT(modernize-use-trailing-return-type)
   std::ofstream output("simulation.json");
   if (!output.is_open()) {
     std::cerr << "Unable to write output\n";
-    delete provider;  // NOLINT(cppcoreguidelines-owning-memory)
-    delete solver;    // NOLINT(cppcoreguidelines-owning-memory)
-    delete loader;    // NOLINT(cppcoreguidelines-owning-memory)
     return 1;
   }
   output << out.dump(2);
   output.close();
-
-  delete provider;  // NOLINT(cppcoreguidelines-owning-memory)
-  delete solver;    // NOLINT(cppcoreguidelines-owning-memory)
-  delete loader;    // NOLINT(cppcoreguidelines-owning-memory)
 
   std::cout << "Success\n";
   return 0;
