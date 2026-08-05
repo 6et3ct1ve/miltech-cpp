@@ -1,4 +1,4 @@
-CXX_FILES = include/Types.h include/MissionProcessor.h include/Logging.h \
+CXX_FILES = include/Types.h include/ThreadSafeQueue.h include/MissionProcessor.h include/Logging.h \
             include/interfaces/ITargetProvider.h include/interfaces/IBallisticSolver.h include/interfaces/IConfigLoader.h include/interfaces/IDroneState.h \
             include/solvers/AnalyticalSolver.h include/solvers/BallisticTable.h include/solvers/TableSolver.h include/providers/ThreadSafeTargetProvider.h \
             include/config/FileConfigLoader.h include/config/ComponentFactory.h \
