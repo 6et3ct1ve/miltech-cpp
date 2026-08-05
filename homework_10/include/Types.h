@@ -74,6 +74,8 @@ struct DroneConfig {
   float hitRadius = 0.0f;
   float angularSpeed = 0.0f;
   float turnThreshold = 0.0f;
+  float physicsTimeStep = 0.01f;
+  float timeScale = 1.0f;
 };
 
 struct DroneContext {
