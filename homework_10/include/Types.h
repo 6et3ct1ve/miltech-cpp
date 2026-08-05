@@ -3,13 +3,12 @@
 #include <iostream>
 #include <cmath>
 #include <string>
-#include <span>
 
 // NOLINTBEGIN(modernize-use-trailing-return-type, cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers) - epsilon comparisons;
 // trailing return type is stylistic only
 struct Coord {
-  float x;
-  float y;
+  float x = 0.0f;
+  float y = 0.0f;
 
   Coord operator+(const Coord& other) const
   {
@@ -52,45 +51,57 @@ struct Coord {
 // NOLINTEND(modernize-use-trailing-return-type, cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
 
 struct Target {
-  std::span<const Coord> positions;
-  float arrayTimeStep;
+  Coord pos{};
+  Coord velocity{};
 };
 
 struct AmmoParams {
   std::string name;
-  float mass, drag, lift;
+  float mass = 0.0f, drag = 0.0f, lift = 0.0f;
 };
 
+enum class DroneMode { STOPPED, ACCELERATING, DECELERATING, TURNING, MOVING };
+
 struct DroneConfig {
-  Coord startPos;
-  float altitude;
-  float initialDir;
-  float attackSpeed;
-  float accelPath;
+  Coord startPos{};
+  float altitude = 0.0f;
+  float initialDir = 0.0f;
+  float attackSpeed = 0.0f;
+  float accelPath = 0.0f;
   std::string ammoName;
-  float arrayTimeStep;
-  float simTimeStep;
-  float hitRadius;
-  float angularSpeed;
-  float turnThreshold;
+  float arrayTimeStep = 0.0f;
+  float simTimeStep = 0.0f;
+  float hitRadius = 0.0f;
+  float angularSpeed = 0.0f;
+  float turnThreshold = 0.0f;
 };
 
 struct DroneContext {
-  Coord pos;
-  float direction = 0.0f;
-  float speed = 0.0f;
-  float acceleration = 0.0f;
   float newDir = 0.0f;
   float deltaAngle = 0.0f;
   const DroneConfig* config = nullptr;
 };
 
+struct DroneCommand {
+  DroneMode mode = DroneMode::STOPPED;
+  float angleSpeed = 0.0f;
+};
+
+struct DroneTelemetry {
+  Coord pos{};
+  float speed = 0.0f;
+  float direction = 0.0f;
+  DroneMode mode = DroneMode::STOPPED;
+  float timeSecSinceStart = 0.0f;
+};
+
 struct SimStep {
-  Coord pos;
-  float direction;
+  Coord pos{};
+  float direction = 0.0f;
   std::string state;
-  int targetIdx;
-  Coord dropPoint;
-  Coord aimPoint;
-  Coord predictedTarget;
+  int targetIdx = 0;
+  Coord dropPoint{};
+  Coord aimPoint{};
+  Coord predictedTarget{};
+  float timeSecSinceStart = 0.0f;
 };
