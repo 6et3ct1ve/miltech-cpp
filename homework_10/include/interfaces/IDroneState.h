@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Types.h"
+
 #include <memory>
 
 class IDroneState {
@@ -12,7 +13,6 @@ public:
   IDroneState& operator=(IDroneState&&) = delete;
   virtual ~IDroneState() = default;
 
-  virtual std::unique_ptr<IDroneState> execute(DroneContext& ctx) = 0;
-  [[nodiscard]] virtual const char* name() const = 0;
-  [[nodiscard]] virtual float estimateTimeToStop(const DroneContext& ctx) const = 0;
+  virtual std::unique_ptr<IDroneState> execute(const DroneTelemetry& tlm, DroneContext& ctx, DroneCommand& cmd) = 0;
+  [[nodiscard]] virtual float estimateTimeToStop(const DroneTelemetry& tlm, const DroneContext& ctx) const = 0;
 };
