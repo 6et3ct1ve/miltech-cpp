@@ -58,6 +58,7 @@ void DronePhysics::step()
       }
       break;
     case DroneMode::MOVING:
+      dir_ += angleSpeed_ * config_.physicsTimeStep;
       break;
   }
 
