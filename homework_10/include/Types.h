@@ -95,6 +95,7 @@ struct DroneTelemetry {
   float direction = 0.0f;
   DroneMode mode = DroneMode::STOPPED;
   float timeSecSinceStart = 0.0f;
+  float acceleration = 0.0f;
 };
 
 struct SimStep {
