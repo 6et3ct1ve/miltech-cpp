@@ -1,37 +1,22 @@
 #include "states/AcceleratingState.h"
 #include "states/MovingState.h"
 
-#include <cmath>
-
 // NOLINTBEGIN(modernize-use-trailing-return-type)
 
-std::unique_ptr<IDroneState> AcceleratingState::execute(DroneContext& ctx)
+std::unique_ptr<IDroneState> AcceleratingState::execute(const DroneTelemetry& tlm, DroneContext& ctx, DroneCommand& cmd)
 {
-  ctx.speed += ctx.acceleration * ctx.config->simTimeStep;
+  cmd.mode = DroneMode::ACCELERATING;
 
-  bool reachedTarget = false;
-  if (ctx.speed >= ctx.config->attackSpeed) {
-    ctx.speed = ctx.config->attackSpeed;
-    reachedTarget = true;
-  }
-
-  ctx.pos.x += cosf(ctx.direction) * ctx.speed * ctx.config->simTimeStep;
-  ctx.pos.y += sinf(ctx.direction) * ctx.speed * ctx.config->simTimeStep;
-
-  if (reachedTarget) {
+  if (tlm.speed >= ctx.config->attackSpeed) {
     return std::make_unique<MovingState>();
   }
+
   return nullptr;
 }
 
-const char* AcceleratingState::name() const
+float AcceleratingState::estimateTimeToStop(const DroneTelemetry& tlm, const DroneContext& /*ctx*/) const
 {
-  return "Accelerating";
-}
-
-float AcceleratingState::estimateTimeToStop(const DroneContext& ctx) const
-{
-  return ctx.speed / ctx.acceleration;
+  return tlm.speed / tlm.acceleration;
 }
 
 // NOLINTEND(modernize-use-trailing-return-type)

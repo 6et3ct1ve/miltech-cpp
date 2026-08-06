@@ -5,18 +5,10 @@
 
 // NOLINTBEGIN(modernize-use-trailing-return-type, cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers) - epsilon comparison
 
-namespace {
-
-float sign(float delta)
+std::unique_ptr<IDroneState> TurningState::execute(const DroneTelemetry& /*tlm*/, DroneContext& ctx, DroneCommand& cmd)
 {
-  return (fabsf(delta) < 1e-9f) ? 0.0f : (delta > 0) ? 1.0f : -1.0f;
-}
-
-}  // namespace
-
-std::unique_ptr<IDroneState> TurningState::execute(DroneContext& ctx)
-{
-  ctx.direction += sign(ctx.deltaAngle) * ctx.config->angularSpeed * ctx.config->simTimeStep;
+  cmd.mode = DroneMode::TURNING;
+  cmd.angleSpeed = std::copysign(ctx.config->angularSpeed, ctx.deltaAngle);
 
   if (fabsf(ctx.deltaAngle) <= ctx.config->turnThreshold) {
     return std::make_unique<AcceleratingState>();
@@ -24,12 +16,7 @@ std::unique_ptr<IDroneState> TurningState::execute(DroneContext& ctx)
   return nullptr;
 }
 
-const char* TurningState::name() const
-{
-  return "Turning";
-}
-
-float TurningState::estimateTimeToStop(const DroneContext& ctx) const
+float TurningState::estimateTimeToStop(const DroneTelemetry& /*tlm*/, const DroneContext& ctx) const
 {
   return fabsf(ctx.deltaAngle) / ctx.config->angularSpeed;
 }

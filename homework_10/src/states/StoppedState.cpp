@@ -3,17 +3,13 @@
 
 // NOLINTBEGIN(modernize-use-trailing-return-type)
 
-std::unique_ptr<IDroneState> StoppedState::execute(DroneContext& /*ctx*/)
+std::unique_ptr<IDroneState> StoppedState::execute(const DroneTelemetry& /*tlm*/, DroneContext& /*ctx*/, DroneCommand& cmd)
 {
+  cmd.mode = DroneMode::STOPPED;
   return std::make_unique<TurningState>();
 }
 
-const char* StoppedState::name() const
-{
-  return "Stopped";
-}
-
-float StoppedState::estimateTimeToStop(const DroneContext& /*ctx*/) const
+float StoppedState::estimateTimeToStop(const DroneTelemetry& /*tlm*/, const DroneContext& /*ctx*/) const
 {
   return 0.0f;
 }

@@ -2,9 +2,8 @@
 
 #include "interfaces/IDroneState.h"
 
-class AcceleratingState : public IDroneState {
+class AcceleratingState final : public IDroneState {
 public:
-  std::unique_ptr<IDroneState> execute(DroneContext& ctx) override;
-  [[nodiscard]] const char* name() const override;
-  [[nodiscard]] float estimateTimeToStop(const DroneContext& ctx) const override;
+  std::unique_ptr<IDroneState> execute(const DroneTelemetry& tlm, DroneContext& ctx, DroneCommand& cmd) override;
+  [[nodiscard]] float estimateTimeToStop(const DroneTelemetry& tlm, const DroneContext& ctx) const override;
 };
