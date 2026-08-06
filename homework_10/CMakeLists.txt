@@ -21,10 +21,15 @@ add_library(
 target_include_directories(Hw10DroneStates PUBLIC include)
 target_compile_options(Hw10DroneStates PRIVATE -Wall -Wextra -pedantic)
 
+add_library(Hw10DronePhysics src/DronePhysics.cpp)
+target_include_directories(Hw10DronePhysics PUBLIC include)
+target_compile_options(Hw10DronePhysics PRIVATE -Wall -Wextra -pedantic)
+
 add_library(Hw10MissionProcessor src/MissionProcessor.cpp)
 target_include_directories(Hw10MissionProcessor PUBLIC include)
-target_link_libraries(Hw10MissionProcessor PUBLIC Hw10ConfigLoader Hw10TargetProvider
-                                                  Hw10BallisticSolver Hw10DroneStates)
+target_link_libraries(
+    Hw10MissionProcessor PUBLIC Hw10ConfigLoader Hw10TargetProvider Hw10BallisticSolver
+                                Hw10DroneStates Hw10DronePhysics)
 target_compile_options(Hw10MissionProcessor PRIVATE -Wall -Wextra -pedantic)
 
 add_library(Hw10Factory src/config/ComponentFactory.cpp)
@@ -54,6 +59,7 @@ if(NOT CMAKE_CROSSCOMPILING)
                 Hw10DroneStates
                 Hw10MissionProcessor
                 Hw10Factory
+                Hw10DronePhysics
                 GTest::gtest_main)
     gtest_discover_tests(Hw10MissionTests DISCOVERY_MODE PRE_TEST)
 endif()
