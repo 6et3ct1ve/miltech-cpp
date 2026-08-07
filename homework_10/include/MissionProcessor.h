@@ -1,10 +1,12 @@
 #pragma once
 
+#include "DronePhysics.h"
 #include "Types.h"
-#include "interfaces/IConfigLoader.h"
-#include "interfaces/ITargetProvider.h"
 #include "interfaces/IBallisticSolver.h"
+#include "interfaces/IConfigLoader.h"
 #include "interfaces/IDroneState.h"
+#include "interfaces/ITargetProvider.h"
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -15,7 +17,8 @@ class MissionProcessor {
 public:
   MissionProcessor(std::unique_ptr<ITargetProvider> provider,
                    std::unique_ptr<IBallisticSolver> solver,
-                   std::unique_ptr<IConfigLoader> loader);
+                   std::unique_ptr<IConfigLoader> loader,
+                   DronePhysics* physics);
   MissionProcessor(const MissionProcessor&) = delete;
   MissionProcessor& operator=(const MissionProcessor&) = delete;  // NOLINT(modernize-use-trailing-return-type)
   MissionProcessor(MissionProcessor&&) = delete;
@@ -34,16 +37,12 @@ private:
   std::unique_ptr<IBallisticSolver> solver_;
   std::unique_ptr<IConfigLoader> loader_;
   std::unique_ptr<IDroneState> currentState_;
+  DronePhysics* physics_ = nullptr;
 
   DroneConfig config_{};
   AmmoParams ammo_{};
 
-  Coord dronePos_{};
-  float dir_ = 0.0f;
-  float speed_ = 0.0f;
-  float acceleration_ = 0.0f;
   int prevTarget_ = -1;
-  float currentTime_ = 0.0f;
   int steps_ = 0;
   bool ok_ = true;
   bool finished_ = false;
