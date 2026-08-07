@@ -1,11 +1,11 @@
 #include "providers/ThreadSafeTargetProvider.h"
-#include "Types.h"
 #include "json.hpp"
 
+#include <cstddef>
 #include <fstream>
 #include <iostream>
 
-JsonTargetProvider::JsonTargetProvider(const std::string& path, float arrayTimeStep)
+ThreadSafeTargetProvider::ThreadSafeTargetProvider(const std::string& path, float arrayTimeStep)
   : arrayTimeStep_(arrayTimeStep)
   , ok_(false)
 {
@@ -23,9 +23,9 @@ JsonTargetProvider::JsonTargetProvider(const std::string& path, float arrayTimeS
   }
   targetsFile.close();
 
-  int targetCount = targetsCoords["targetCount"];
-  int timeSteps = targetsCoords["timeSteps"];
-  if (targetCount == 0 || timeSteps == 0) {
+  const int targetCount = targetsCoords["targetCount"];
+  const int timeSteps = targetsCoords["timeSteps"];
+  if (targetCount == 0 || timeSteps == 0 || arrayTimeStep <= 0.0f) {
     std::cerr << "Coord target format error\n";
     return;
   }
@@ -38,20 +38,52 @@ JsonTargetProvider::JsonTargetProvider(const std::string& path, float arrayTimeS
       targets_[i][j].y = targetsCoords["targets"][i]["positions"][j]["y"];
     }
   }
+  timeSteps_ = static_cast<size_t>(timeSteps);
+  buffers_[0].resize(targetCount);
+  buffers_[1].resize(targetCount);
   ok_ = true;
+  updateCurrent();
 }
 
-int JsonTargetProvider::getTargetCount()  // NOLINT(modernize-use-trailing-return-type)
+void ThreadSafeTargetProvider::updateCurrent()
+{
+  const size_t next = (nodeIndex_ + 1) % timeSteps_;
+  const size_t back = 1 - activeBuffer_;
+
+  for (size_t i = 0; i < buffers_[back].size(); i++) {
+    buffers_[back][i].pos = targets_[i][nodeIndex_];
+    buffers_[back][i].velocity = (targets_[i][next] - targets_[i][nodeIndex_]) / arrayTimeStep_;
+  }
+
+  const std::lock_guard<std::mutex> lock(mutex_);
+  activeBuffer_ = back;
+}
+
+int ThreadSafeTargetProvider::getTargetCount() const  // NOLINT(modernize-use-trailing-return-type)
 {
   return static_cast<int>(targets_.size());
 }
 
-Target JsonTargetProvider::getTarget(int index)  // NOLINT(modernize-use-trailing-return-type)
+Target ThreadSafeTargetProvider::getTarget(int index) const  // NOLINT(modernize-use-trailing-return-type)
 {
-  return Target{targets_[index], arrayTimeStep_};
+  const std::lock_guard<std::mutex> lock(mutex_);
+  return buffers_[activeBuffer_][static_cast<size_t>(index)];
 }
 
-bool JsonTargetProvider::isValid() const  // NOLINT(modernize-use-trailing-return-type)
+bool ThreadSafeTargetProvider::isValid() const  // NOLINT(modernize-use-trailing-return-type)
 {
   return ok_;
+}
+
+void ThreadSafeTargetProvider::step(float dt)
+{
+  if (!ok_) {
+    return;
+  }
+  accumulator_ += dt;
+  while (accumulator_ >= arrayTimeStep_) {
+    nodeIndex_ = (nodeIndex_ + 1) % timeSteps_;
+    accumulator_ -= arrayTimeStep_;
+    updateCurrent();
+  }
 }

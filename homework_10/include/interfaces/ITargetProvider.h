@@ -9,7 +9,7 @@ public:
   ITargetProvider& operator=(const ITargetProvider&) = delete;  // NOLINT(modernize-use-trailing-return-type)
   ITargetProvider(ITargetProvider&&) = delete;
   ITargetProvider& operator=(ITargetProvider&&) = delete;  // NOLINT(modernize-use-trailing-return-type)
-  virtual int getTargetCount() = 0;                        // NOLINT(modernize-use-trailing-return-type)
-  virtual Target getTarget(int index) = 0;                 // NOLINT(modernize-use-trailing-return-type)
+  [[nodiscard]] virtual int getTargetCount() const = 0;
+  [[nodiscard]] virtual Target getTarget(int index) const = 0;  // NOLINT(modernize-use-trailing-return-type)
   virtual ~ITargetProvider() = default;
 };
