@@ -21,8 +21,8 @@ std::unique_ptr<IBallisticSolver> createSolver(SolverType type, const std::strin
 std::unique_ptr<ITargetProvider> createProvider(ProviderType type, const std::string& path, float arrayTimeStep)
 {
   switch (type) {
-    case ProviderType::JSON:
-      return std::make_unique<JsonTargetProvider>(path, arrayTimeStep);
+    case ProviderType::THREAD_SAFE:
+      return std::make_unique<ThreadSafeTargetProvider>(path, arrayTimeStep);
     default:
       return nullptr;
   }

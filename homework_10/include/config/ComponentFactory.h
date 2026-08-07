@@ -7,7 +7,7 @@
 #include <string>
 
 enum class SolverType { ANALYTICAL, TABLE };
-enum class ProviderType { JSON };
+enum class ProviderType { THREAD_SAFE };
 enum class LoaderType { FILE };
 
 // NOLINTBEGIN(modernize-use-trailing-return-type)
