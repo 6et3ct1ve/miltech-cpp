@@ -1,10 +1,14 @@
 #include "config/ComponentFactory.h"
+#include "DronePhysics.h"
+#include "providers/ThreadSafeTargetProvider.h"
 #include "MissionProcessor.h"
 #include "Logging.h"
 
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <algorithm>
+#include <memory>
 #include "json.hpp"
 
 int main(int argc, char* argv[])  // NOLINT(modernize-use-trailing-return-type)
@@ -24,7 +28,7 @@ int main(int argc, char* argv[])  // NOLINT(modernize-use-trailing-return-type)
 
   DroneConfig config = loader->getConfig();
 
-  auto provider = createProvider(ProviderType::JSON, targetsPath, config.arrayTimeStep);
+ auto provider = std::make_unique<ThreadSafeTargetProvider>(targetsPath, config.arrayTimeStep);
 
   std::unique_ptr<IBallisticSolver> solver;
   if (std::string(solverType) == "table") {
@@ -34,13 +38,20 @@ int main(int argc, char* argv[])  // NOLINT(modernize-use-trailing-return-type)
     solver = createSolver(SolverType::ANALYTICAL);
   }
 
-  MissionProcessor mission(std::move(provider), std::move(solver), std::move(loader));
+  auto physics = std::make_unique<DronePhysics>();
+
+  MissionProcessor mission(provider.get(), std::move(solver), std::move(loader), physics.get());
   if (!mission.init(configPath)) {
     std::cerr << "Mission init failed\n";
     return 1;
   }
-
-  while (mission.hasNext()) {
+const int physicsStepsPerSim =
+      std::max(1, static_cast<int>(config.simTimeStep / config.physicsTimeStep));
+while (mission.hasNext()) {
+    provider->step(config.simTimeStep);
+    for (int i = 0; i < physicsStepsPerSim; i++) {
+      physics->step();
+    }
     mission.step();
   }
 
@@ -59,6 +70,7 @@ int main(int argc, char* argv[])  // NOLINT(modernize-use-trailing-return-type)
     step["dropPoint"] = {{"x", s.dropPoint.x}, {"y", s.dropPoint.y}};
     step["aimPoint"] = {{"x", s.aimPoint.x}, {"y", s.aimPoint.y}};
     step["predictedTarget"] = {{"x", s.predictedTarget.x}, {"y", s.predictedTarget.y}};
+    step["timeSecSinceStart"] = s.timeSecSinceStart;
     out["steps"].push_back(step);
   }
 
