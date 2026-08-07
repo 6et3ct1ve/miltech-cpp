@@ -15,7 +15,7 @@ constexpr int kMaxSteps = 10000;
 
 class MissionProcessor {
 public:
-  MissionProcessor(std::unique_ptr<ITargetProvider> provider,
+  MissionProcessor(ITargetProvider* provider,
                    std::unique_ptr<IBallisticSolver> solver,
                    std::unique_ptr<IConfigLoader> loader,
                    DronePhysics* physics);
@@ -33,7 +33,7 @@ public:
   [[nodiscard]] const std::vector<SimStep>& getSteps() const;  // NOLINT(modernize-use-trailing-return-type)
 
 private:
-  std::unique_ptr<ITargetProvider> provider_;
+  ITargetProvider* provider_ = nullptr;
   std::unique_ptr<IBallisticSolver> solver_;
   std::unique_ptr<IConfigLoader> loader_;
   std::unique_ptr<IDroneState> currentState_;

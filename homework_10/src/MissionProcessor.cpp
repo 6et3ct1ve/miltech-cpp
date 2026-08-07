@@ -2,6 +2,10 @@
 #include "Logging.h"
 #include "states/StoppedState.h"
 #include "states/MovingState.h"
+#include "interfaces/IBallisticSolver.h"
+#include "interfaces/IConfigLoader.h"
+#include "interfaces/IDroneState.h"
+#include "interfaces/ITargetProvider.h"
 
 #include <cmath>
 #include <iostream>
@@ -31,11 +35,10 @@ const char* modeName(DroneMode mode)
 
 }  // namespace
 
-MissionProcessor::MissionProcessor(std::unique_ptr<ITargetProvider> provider,
+MissionProcessor::MissionProcessor(ITargetProvider* provider,
                                    std::unique_ptr<IBallisticSolver> solver,
-                                   std::unique_ptr<IConfigLoader> loader,
-                                   DronePhysics* physics)
-  : provider_(std::move(provider))
+                                   std::unique_ptr<IConfigLoader> loader, DronePhysics* physics)
+  : provider_(provider)
   , solver_(std::move(solver))
   , loader_(std::move(loader))
   , currentState_(std::make_unique<StoppedState>())
@@ -52,7 +55,7 @@ bool MissionProcessor::init(const std::string& configSource)
   config_ = loader_->getConfig();
   ammo_ = loader_->getAmmoParams();
 
-  if (physics_ == nullptr || !physics_->init(config_)) {
+  if (physics_ == nullptr || !physics_->init(config_) || provider_ == nullptr) {
     std::cerr << "Physics init error\n";
     return false;
   }
