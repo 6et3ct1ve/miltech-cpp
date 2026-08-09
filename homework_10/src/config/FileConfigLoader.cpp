@@ -42,10 +42,13 @@ bool FileConfigLoader::load()  // NOLINT(modernize-use-trailing-return-type)
   config_.simTimeStep = droneConfig["simulation"]["timeStep"];
   config_.hitRadius = droneConfig["simulation"]["hitRadius"];
   config_.arrayTimeStep = droneConfig["targetArrayTimeStep"];
+  config_.physicsTimeStep = droneConfig["simulation"].value("physicsTimeStep", config_.physicsTimeStep);
+  config_.timeScale = droneConfig["simulation"].value("timeScale", config_.timeScale);
 
   // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
   if (fabsf(config_.arrayTimeStep) < 1e-9f || fabsf(config_.attackSpeed) < 1e-9f || fabsf(config_.simTimeStep) < 1e-9f ||
-      fabsf(config_.accelPath) < 1e-9f || fabsf(config_.angularSpeed) < 1e-9f) {
+      fabsf(config_.accelPath) < 1e-9f || fabsf(config_.angularSpeed) < 1e-9f || config_.physicsTimeStep <= 0.0f ||
+      config_.timeScale <= 0.0f) {
     std::cerr << "Input format error\n";
     return false;
   }
