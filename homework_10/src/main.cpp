@@ -30,6 +30,10 @@ int main(int argc, char* argv[])  // NOLINT(modernize-use-trailing-return-type)
   DroneConfig config = loader->getConfig();
 
   auto provider = std::make_unique<ThreadSafeTargetProvider>(targetsPath, config.arrayTimeStep, config.timeScale);
+  if (!provider->isValid()) {
+    std::cerr << "Provider init failed\n";
+    return 1;
+  }
 
   std::unique_ptr<IBallisticSolver> solver;
   if (std::string(solverType) == "table") {
