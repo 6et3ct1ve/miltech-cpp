@@ -5,7 +5,14 @@
 #include "config/FileConfigLoader.h"
 #include "providers/ThreadSafeTargetProvider.h"
 #include "ThreadSafeQueue.h"
+#include "states/AcceleratingState.h"
+#include "states/DeceleratingState.h"
+#include "states/MovingState.h"
+#include "states/StoppedState.h"
+#include "states/TurningState.h"
+
 #include <thread>
+#include <chrono>
 #include <gtest/gtest.h>
 
 // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
@@ -279,5 +286,200 @@ TEST(Hw10DronePhysics, DeceleratingClampsAtZero)
   }
   DroneTelemetry tlm = physics.getTelemetry();
   EXPECT_NEAR(tlm.speed, 0.0f, 0.001f);
+}
+
+TEST(Hw10ThreadSafeTargetProvider, SmallStepDoesNotAdvanceNode)
+{
+  ThreadSafeTargetProvider provider("../../../homework_10/data/targets.json", 1.0f, 1.0f);
+  ASSERT_TRUE(provider.isValid());
+
+  const Target before = provider.getTarget(0);
+  provider.step(0.1f);
+  const Target after = provider.getTarget(0);
+
+  EXPECT_TRUE(after.pos == before.pos);
+}
+
+TEST(Hw10ThreadSafeTargetProvider, AccumulatedStepsAdvanceNode)
+{
+  ThreadSafeTargetProvider provider("../../../homework_10/data/targets.json", 1.0f, 1.0f);
+  ASSERT_TRUE(provider.isValid());
+
+  const Target before = provider.getTarget(0);
+  for (int i = 0; i < 10; i++) {
+    provider.step(0.1f);
+  }
+  const Target after = provider.getTarget(0);
+
+  EXPECT_FALSE(after.pos == before.pos);
+}
+
+TEST(Hw10ThreadSafeTargetProvider, WrapsAroundTrajectory)
+{
+  constexpr int kTimeSteps = 60;
+  ThreadSafeTargetProvider provider("../../../homework_10/data/targets.json", 1.0f, 1.0f);
+  ASSERT_TRUE(provider.isValid());
+
+  const Target before = provider.getTarget(0);
+  for (int i = 0; i < kTimeSteps; i++) {
+    provider.step(1.0f);
+  }
+  const Target after = provider.getTarget(0);
+
+  EXPECT_TRUE(after.pos == before.pos);
+}
+
+TEST(Hw10States, AcceleratingSwitchesToMovingAtAttackSpeed)
+{
+  DroneConfig config{};
+  config.attackSpeed = 10.0f;
+
+  DroneTelemetry tlm{};
+  tlm.speed = 10.0f;
+
+  DroneContext ctx{};
+  ctx.config = &config;
+
+  DroneCommand cmd{};
+  AcceleratingState state;
+  auto next = state.execute(tlm, ctx, cmd);
+
+  EXPECT_NE(next, nullptr);
+  EXPECT_EQ(cmd.mode, DroneMode::ACCELERATING);
+}
+
+TEST(Hw10States, DeceleratingSwitchesToStoppedAtZeroSpeed)
+{
+  DroneConfig config{};
+  config.attackSpeed = 10.0f;
+
+  DroneTelemetry tlm{};
+  tlm.speed = 0.0f;
+
+  DroneContext ctx{};
+  ctx.config = &config;
+
+  DroneCommand cmd{};
+  DeceleratingState state;
+  auto next = state.execute(tlm, ctx, cmd);
+
+  EXPECT_NE(next, nullptr);
+  EXPECT_EQ(cmd.mode, DroneMode::DECELERATING);
+}
+
+TEST(Hw10States, MovingSwitchesToDeceleratingOnLargeAngle)
+{
+  DroneConfig config{};
+  config.attackSpeed = 10.0f;
+  config.turnThreshold = 0.05f;
+  config.angularSpeed = 0.5f;
+  config.physicsTimeStep = 0.01f;
+
+  DroneTelemetry tlm{};
+  tlm.speed = 10.0f;
+
+  DroneContext ctx{};
+  ctx.config = &config;
+  ctx.deltaAngle = 1.0f;
+
+  DroneCommand cmd{};
+  MovingState state;
+  auto next = state.execute(tlm, ctx, cmd);
+
+  EXPECT_NE(next, nullptr);
+}
+
+TEST(Hw10States, StoppedAlwaysSwitchesToTurning)
+{
+  DroneConfig config{};
+  config.attackSpeed = 10.0f;
+  config.physicsTimeStep = 0.01f;
+
+  DroneTelemetry tlm{};
+  tlm.speed = 0.0f;
+
+  DroneContext ctx{};
+  ctx.config = &config;
+
+  DroneCommand cmd{};
+  StoppedState state;
+  auto next = state.execute(tlm, ctx, cmd);
+
+  EXPECT_NE(next, nullptr);
+  EXPECT_EQ(cmd.mode, DroneMode::STOPPED);
+}
+
+TEST(Hw10States, TurningSwitchesToAcceleratingOnSmallAngle)
+{
+  DroneConfig config{};
+  config.attackSpeed = 10.0f;
+  config.turnThreshold = 0.05f;
+  config.angularSpeed = 0.5f;
+  config.physicsTimeStep = 0.01f;
+
+  DroneTelemetry tlm{};
+  tlm.speed = 10.0f;
+
+  DroneContext ctx{};
+  ctx.config = &config;
+  ctx.deltaAngle = 0.01f;
+
+  DroneCommand cmd{};
+  TurningState state;
+  auto next = state.execute(tlm, ctx, cmd);
+
+  EXPECT_NE(next, nullptr);
+  EXPECT_EQ(cmd.mode, DroneMode::TURNING);
+}
+
+TEST(Hw10Lifecycle, ThreadBecomesReadyAfterRun)
+{
+  DroneConfig config{};
+  config.attackSpeed = 10.0f;
+  config.accelPath = 50.0f;
+  config.physicsTimeStep = 0.01f;
+  config.timeScale = 100.0f;
+
+  DronePhysics physics;
+  ASSERT_TRUE(physics.init(config));
+  EXPECT_FALSE(physics.isThreadReady());
+
+  std::thread t(&DronePhysics::run, &physics);
+
+  while (!physics.isThreadReady()) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  }
+  EXPECT_TRUE(physics.isThreadReady());
+
+  physics.stop();
+  t.join();
+}
+
+TEST(Hw10Lifecycle, StopTerminatesRun)
+{
+  DroneConfig config{};
+  config.attackSpeed = 10.0f;
+  config.accelPath = 50.0f;
+  config.physicsTimeStep = 0.01f;
+  config.timeScale = 100.0f;
+
+  DronePhysics physics;
+  ASSERT_TRUE(physics.init(config));
+
+  std::thread t(&DronePhysics::run, &physics);
+
+  while (!physics.isThreadReady()) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  }
+  EXPECT_TRUE(physics.isThreadReady());
+
+  physics.start();
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+  const DroneTelemetry tlm = physics.getTelemetry();
+  EXPECT_GT(tlm.timeSecSinceStart, 0.0f);
+
+  physics.stop();
+  t.join();
 }
 // NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
