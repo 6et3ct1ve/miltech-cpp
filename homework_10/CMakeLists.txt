@@ -1,12 +1,15 @@
 cmake_minimum_required(VERSION 3.20)
 project(homework_10 CXX)
 
+find_package(Threads REQUIRED)
+
 add_library(Hw10ConfigLoader src/config/FileConfigLoader.cpp)
 target_include_directories(Hw10ConfigLoader PUBLIC include)
 target_compile_options(Hw10ConfigLoader PRIVATE -Wall -Wextra -pedantic)
 
 add_library(Hw10TargetProvider src/providers/ThreadSafeTargetProvider.cpp)
 target_include_directories(Hw10TargetProvider PUBLIC include)
+target_link_libraries(Hw10TargetProvider PUBLIC Threads::Threads)
 target_compile_options(Hw10TargetProvider PRIVATE -Wall -Wextra -pedantic)
 
 add_library(Hw10BallisticSolver src/solvers/AnalyticalSolver.cpp src/solvers/BallisticTable.cpp
@@ -23,13 +26,14 @@ target_compile_options(Hw10DroneStates PRIVATE -Wall -Wextra -pedantic)
 
 add_library(Hw10DronePhysics src/DronePhysics.cpp)
 target_include_directories(Hw10DronePhysics PUBLIC include)
+target_link_libraries(Hw10DronePhysics PUBLIC Threads::Threads)
 target_compile_options(Hw10DronePhysics PRIVATE -Wall -Wextra -pedantic)
 
 add_library(Hw10MissionProcessor src/MissionProcessor.cpp)
 target_include_directories(Hw10MissionProcessor PUBLIC include)
 target_link_libraries(
     Hw10MissionProcessor PUBLIC Hw10ConfigLoader Hw10TargetProvider Hw10BallisticSolver
-                                Hw10DroneStates Hw10DronePhysics)
+                                Hw10DroneStates Hw10DronePhysics Threads::Threads)
 target_compile_options(Hw10MissionProcessor PRIVATE -Wall -Wextra -pedantic)
 
 add_library(Hw10Factory src/config/ComponentFactory.cpp)
