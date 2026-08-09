@@ -11,6 +11,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <thread>
+#include <chrono>
 
 // NOLINTBEGIN(modernize-use-trailing-return-type,cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
@@ -37,7 +39,8 @@ const char* modeName(DroneMode mode)
 
 MissionProcessor::MissionProcessor(ITargetProvider* provider,
                                    std::unique_ptr<IBallisticSolver> solver,
-                                   std::unique_ptr<IConfigLoader> loader, DronePhysics* physics)
+                                   std::unique_ptr<IConfigLoader> loader,
+                                   DronePhysics* physics)
   : provider_(provider)
   , solver_(std::move(solver))
   , loader_(std::move(loader))
@@ -210,5 +213,34 @@ int MissionProcessor::getStepCount() const
 const std::vector<SimStep>& MissionProcessor::getSteps() const
 {
   return simSteps_;
+}
+
+void MissionProcessor::run()
+{
+  ready_ = true;
+
+  while (!started_ && running_) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  }
+
+  while (running_ && hasNext()) {
+    step();
+    std::this_thread::sleep_for(std::chrono::duration<float>(config_.simTimeStep / config_.timeScale));
+  }
+}
+
+void MissionProcessor::start()
+{
+  started_ = true;
+}
+
+void MissionProcessor::stop()
+{
+  running_ = false;
+}
+
+bool MissionProcessor::isThreadReady() const
+{
+  return ready_;
 }
 // NOLINTEND(modernize-use-trailing-return-type,cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)

@@ -1,5 +1,5 @@
 CXX_FILES = include/Types.h include/MissionProcessor.h include/Logging.h include/ThreadSafeQueue.h include/DronePhysics.h \
-            include/interfaces/ITargetProvider.h include/interfaces/IBallisticSolver.h include/interfaces/IConfigLoader.h include/interfaces/IDroneState.h \
+            include/interfaces/ITargetProvider.h include/interfaces/IBallisticSolver.h include/interfaces/IConfigLoader.h include/interfaces/IDroneState.h include/interfaces/IThreadedComponent.h \
             include/solvers/AnalyticalSolver.h include/solvers/BallisticTable.h include/solvers/TableSolver.h include/providers/ThreadSafeTargetProvider.h \
             include/config/FileConfigLoader.h include/config/ComponentFactory.h \
             include/states/StoppedState.h include/states/AcceleratingState.h include/states/DeceleratingState.h include/states/TurningState.h include/states/MovingState.h \

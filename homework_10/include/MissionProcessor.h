@@ -6,6 +6,8 @@
 #include "interfaces/IConfigLoader.h"
 #include "interfaces/IDroneState.h"
 #include "interfaces/ITargetProvider.h"
+#include "interfaces/IThreadedComponent.h"
+#include <atomic>
 
 #include <memory>
 #include <string>
@@ -13,7 +15,7 @@
 
 constexpr int kMaxSteps = 10000;
 
-class MissionProcessor {
+class MissionProcessor : public IThreadedComponent {
 public:
   MissionProcessor(ITargetProvider* provider,
                    std::unique_ptr<IBallisticSolver> solver,
@@ -31,6 +33,10 @@ public:
   void changeSolver(std::unique_ptr<IBallisticSolver> solver);
   [[nodiscard]] int getStepCount() const;                      // NOLINT(modernize-use-trailing-return-type)
   [[nodiscard]] const std::vector<SimStep>& getSteps() const;  // NOLINT(modernize-use-trailing-return-type)
+  void run() override;
+  void start() override;
+  void stop() override;
+  [[nodiscard]] bool isThreadReady() const override;
 
 private:
   ITargetProvider* provider_ = nullptr;
@@ -53,4 +59,8 @@ private:
   std::vector<Coord> predictedAll_;
 
   std::vector<SimStep> simSteps_;
+
+  std::atomic<bool> ready_{false};
+  std::atomic<bool> started_{false};
+  std::atomic<bool> running_{true};
 };

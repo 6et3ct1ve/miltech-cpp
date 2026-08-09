@@ -2,6 +2,8 @@
 
 #include <cmath>
 #include <iostream>
+#include <thread>
+#include <chrono>
 
 bool DronePhysics::init(const DroneConfig& config)
 {
@@ -72,4 +74,33 @@ DroneTelemetry DronePhysics::getTelemetry() const
   const std::lock_guard<std::mutex> lock(mutex_);
   return DroneTelemetry{
     .pos = pos_, .speed = speed_, .direction = dir_, .mode = mode_, .timeSecSinceStart = timeSecSinceStart_, .acceleration = acceleration_};
+}
+
+void DronePhysics::run()
+{
+  ready_ = true;
+
+  while (!started_ && running_) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  }
+
+  while (running_) {
+    step();
+    std::this_thread::sleep_for(std::chrono::duration<float>(config_.physicsTimeStep / config_.timeScale));
+  }
+}
+
+void DronePhysics::start()
+{
+  started_ = true;
+}
+
+void DronePhysics::stop()
+{
+  running_ = false;
+}
+
+bool DronePhysics::isThreadReady() const
+{
+  return ready_;
 }

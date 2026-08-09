@@ -4,9 +4,13 @@
 #include <cstddef>
 #include <fstream>
 #include <iostream>
+#include <vector>
+#include <thread>
+#include <chrono>
 
-ThreadSafeTargetProvider::ThreadSafeTargetProvider(const std::string& path, float arrayTimeStep)
+ThreadSafeTargetProvider::ThreadSafeTargetProvider(const std::string& path, float arrayTimeStep, float timeScale)
   : arrayTimeStep_(arrayTimeStep)
+  , timeScale_(timeScale > 0.0f ? timeScale : 1.0f)
   , ok_(false)
 {
   std::ifstream targetsFile(path);
@@ -86,4 +90,33 @@ void ThreadSafeTargetProvider::step(float dt)
     accumulator_ -= arrayTimeStep_;
     updateCurrent();
   }
+}
+
+void ThreadSafeTargetProvider::run()
+{
+  ready_ = true;
+
+  while (!started_ && running_) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  }
+
+  while (running_) {
+    step(arrayTimeStep_);
+    std::this_thread::sleep_for(std::chrono::duration<float>(arrayTimeStep_ / timeScale_));
+  }
+}
+
+void ThreadSafeTargetProvider::start()
+{
+  started_ = true;
+}
+
+void ThreadSafeTargetProvider::stop()
+{
+  running_ = false;
+}
+
+bool ThreadSafeTargetProvider::isThreadReady() const
+{
+  return ready_;
 }
