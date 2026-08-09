@@ -211,11 +211,73 @@ TEST(Hw10DronePhysics, InitFailsOnZeroAccelPath)
   EXPECT_FALSE(physics.init(config));
 }
 
-TEST(Hw10DronePhysics, MovingIntegratesPosition) {}
+TEST(Hw10DronePhysics, MovingIntegratesPosition)
+{
+  DroneConfig config{};
+  config.attackSpeed = 10.0f;
+  config.accelPath = 50.0f;
+  config.physicsTimeStep = 0.1f;
+  config.initialDir = 0.0f;
+  DronePhysics physics;
+  ASSERT_TRUE(physics.init(config));
+  physics.submit(DroneCommand{DroneMode::MOVING, 0.0f});
+  physics.step();
+  DroneTelemetry tlm = physics.getTelemetry();
+  EXPECT_NEAR(tlm.pos.x, 1.0f, 0.001f);
+  EXPECT_NEAR(tlm.pos.y, 0.0f, 0.001f);
+  EXPECT_NEAR(tlm.timeSecSinceStart, 0.1f, 0.001f);
+}
 
-TEST(Hw10DronePhysics, TurningChangesDirection) {}
+TEST(Hw10DronePhysics, TurningChangesDirection)
+{
+  DroneConfig config{};
+  config.attackSpeed = 10.0f;
+  config.accelPath = 50.0f;
+  config.physicsTimeStep = 0.1f;
+  config.initialDir = 0.0f;
+  DronePhysics physics;
+  ASSERT_TRUE(physics.init(config));
+  physics.submit(DroneCommand{DroneMode::TURNING, 0.5f});
+  physics.step();
+  DroneTelemetry tlm = physics.getTelemetry();
+  EXPECT_NEAR(tlm.direction, 0.05f, 0.001f);
+}
 
-TEST(Hw10DronePhysics, AcceleratingClampsAtAttackSpeed) {}
+TEST(Hw10DronePhysics, AcceleratingClampsAtAttackSpeed)
+{
+  DroneConfig config{};
+  config.attackSpeed = 10.0f;
+  config.accelPath = 50.0f;
+  config.physicsTimeStep = 0.1f;
+  config.initialDir = 0.0f;
+  DronePhysics physics;
+  ASSERT_TRUE(physics.init(config));
+  physics.submit(DroneCommand{DroneMode::DECELERATING, 0.0f});
+  for (int i = 0; i < 50; i++) {
+    physics.step();
+  }
+  physics.submit(DroneCommand{DroneMode::ACCELERATING, 0.0f});
+  for (int i = 0; i < 100; i++) {
+    physics.step();
+  }
+  DroneTelemetry tlm = physics.getTelemetry();
+  EXPECT_NEAR(tlm.speed, 10.0f, 0.001f);
+}
 
-TEST(Hw10DronePhysics, DeceleratingClampsAtZero) {}
+TEST(Hw10DronePhysics, DeceleratingClampsAtZero)
+{
+  DroneConfig config{};
+  config.attackSpeed = 10.0f;
+  config.accelPath = 50.0f;
+  config.physicsTimeStep = 0.1f;
+  config.initialDir = 0.0f;
+  DronePhysics physics;
+  ASSERT_TRUE(physics.init(config));
+  physics.submit(DroneCommand{DroneMode::DECELERATING, 0.0f});
+  for (int i = 0; i < 150; i++) {
+    physics.step();
+  }
+  DroneTelemetry tlm = physics.getTelemetry();
+  EXPECT_NEAR(tlm.speed, 0.0f, 0.001f);
+}
 // NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
