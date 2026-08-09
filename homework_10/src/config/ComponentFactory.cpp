@@ -18,11 +18,11 @@ std::unique_ptr<IBallisticSolver> createSolver(SolverType type, const std::strin
 }
 
 // NOLINTNEXTLINE(modernize-use-trailing-return-type)
-std::unique_ptr<ITargetProvider> createProvider(ProviderType type, const std::string& path, float arrayTimeStep)
+std::unique_ptr<ITargetProvider> createProvider(ProviderType type, const std::string& path, float arrayTimeStep, float timeScale)
 {
   switch (type) {
     case ProviderType::THREAD_SAFE:
-      return std::make_unique<ThreadSafeTargetProvider>(path, arrayTimeStep);
+      return std::make_unique<ThreadSafeTargetProvider>(path, arrayTimeStep, timeScale);
     default:
       return nullptr;
   }
