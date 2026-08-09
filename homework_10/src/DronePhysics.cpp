@@ -9,7 +9,7 @@ bool DronePhysics::init(const DroneConfig& config)
 {
   config_ = config;
   acceleration_ = powf(config.attackSpeed, 2.0f) / (2.0f * config.accelPath);
-  if (fabsf(acceleration_) < 1e-9f) {
+  if (!std::isfinite(acceleration_) || fabsf(acceleration_) < 1e-9f) {
     std::cerr << "Input format error\n";
     return false;
   }
