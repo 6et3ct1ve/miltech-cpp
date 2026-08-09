@@ -7,8 +7,9 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <algorithm>
 #include <memory>
+#include <thread>
+#include <chrono>
 #include "json.hpp"
 
 int main(int argc, char* argv[])  // NOLINT(modernize-use-trailing-return-type)
@@ -28,7 +29,7 @@ int main(int argc, char* argv[])  // NOLINT(modernize-use-trailing-return-type)
 
   DroneConfig config = loader->getConfig();
 
- auto provider = std::make_unique<ThreadSafeTargetProvider>(targetsPath, config.arrayTimeStep);
+  auto provider = std::make_unique<ThreadSafeTargetProvider>(targetsPath, config.arrayTimeStep, config.timeScale);
 
   std::unique_ptr<IBallisticSolver> solver;
   if (std::string(solverType) == "table") {
@@ -45,15 +46,24 @@ int main(int argc, char* argv[])  // NOLINT(modernize-use-trailing-return-type)
     std::cerr << "Mission init failed\n";
     return 1;
   }
-const int physicsStepsPerSim =
-      std::max(1, static_cast<int>(config.simTimeStep / config.physicsTimeStep));
-while (mission.hasNext()) {
-    provider->step(config.simTimeStep);
-    for (int i = 0; i < physicsStepsPerSim; i++) {
-      physics->step();
-    }
-    mission.step();
+  std::thread providerThread(&ThreadSafeTargetProvider::run, provider.get());
+  std::thread physicsThread(&DronePhysics::run, physics.get());
+  std::thread missionThread(&MissionProcessor::run, &mission);
+
+  while (!provider->isThreadReady() || !physics->isThreadReady() || !mission.isThreadReady()) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
+
+  provider->start();
+  physics->start();
+  mission.start();
+
+  missionThread.join();
+
+  physics->stop();
+  provider->stop();
+  physicsThread.join();
+  providerThread.join();
 
   LOG("Simulation complete. Steps: " << mission.getStepCount());
 
