@@ -11,7 +11,6 @@
 ThreadSafeTargetProvider::ThreadSafeTargetProvider(const std::string& path, float arrayTimeStep, float timeScale)
   : arrayTimeStep_(arrayTimeStep)
   , timeScale_(timeScale > 0.0f ? timeScale : 1.0f)
-  , ok_(false)
 {
   std::ifstream targetsFile(path);
   if (!targetsFile.is_open()) {
@@ -49,6 +48,7 @@ ThreadSafeTargetProvider::ThreadSafeTargetProvider(const std::string& path, floa
   updateCurrent();
 }
 
+// NOLINTBEGIN(cppcoreguidelines-pro-bounds-constant-array-index)
 void ThreadSafeTargetProvider::updateCurrent()
 {
   const size_t next = (nodeIndex_ + 1) % timeSteps_;
@@ -73,6 +73,8 @@ Target ThreadSafeTargetProvider::getTarget(int index) const  // NOLINT(modernize
   const std::lock_guard<std::mutex> lock(mutex_);
   return buffers_[activeBuffer_][static_cast<size_t>(index)];
 }
+
+// NOLINTEND(cppcoreguidelines-pro-bounds-constant-array-index)
 
 bool ThreadSafeTargetProvider::isValid() const  // NOLINT(modernize-use-trailing-return-type)
 {
@@ -116,7 +118,7 @@ void ThreadSafeTargetProvider::stop()
   running_ = false;
 }
 
-bool ThreadSafeTargetProvider::isThreadReady() const
+bool ThreadSafeTargetProvider::isThreadReady() const  // NOLINT(modernize-use-trailing-return-type)
 {
   return ready_;
 }

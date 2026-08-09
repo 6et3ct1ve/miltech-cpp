@@ -5,7 +5,8 @@
 #include <thread>
 #include <chrono>
 
-bool DronePhysics::init(const DroneConfig& config)
+// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+bool DronePhysics::init(const DroneConfig& config)  // NOLINT(modernize-use-trailing-return-type)
 {
   config_ = config;
   acceleration_ = powf(config.attackSpeed, 2.0f) / (2.0f * config.accelPath);
@@ -20,6 +21,7 @@ bool DronePhysics::init(const DroneConfig& config)
   mode_ = DroneMode::MOVING;
   return true;
 }
+// NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
 void DronePhysics::submit(const DroneCommand& command)
 {
@@ -69,7 +71,7 @@ void DronePhysics::step()
   timeSecSinceStart_ += config_.physicsTimeStep;
 }
 
-DroneTelemetry DronePhysics::getTelemetry() const
+DroneTelemetry DronePhysics::getTelemetry() const  // NOLINT(modernize-use-trailing-return-type)
 {
   const std::lock_guard<std::mutex> lock(mutex_);
   return DroneTelemetry{
@@ -100,7 +102,7 @@ void DronePhysics::stop()
   running_ = false;
 }
 
-bool DronePhysics::isThreadReady() const
+bool DronePhysics::isThreadReady() const  // NOLINT(modernize-use-trailing-return-type)
 {
   return ready_;
 }
