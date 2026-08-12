@@ -3,7 +3,7 @@
 constexpr int kDefaultDropPulseMs = 80;
 
 class IGpioOutput {
- public:
+public:
   IGpioOutput() = default;
   IGpioOutput(const IGpioOutput&) = delete;
   IGpioOutput& operator=(const IGpioOutput&) = delete;
