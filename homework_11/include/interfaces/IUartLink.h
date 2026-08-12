@@ -1,9 +1,9 @@
 #pragma once
 
-#include "interfaces/ILinkHandler.h"
+#include "ILinkHandler.h"
 
 class IUartLink {
- public:
+public:
   IUartLink() = default;
   IUartLink(const IUartLink&) = delete;
   IUartLink& operator=(const IUartLink&) = delete;
