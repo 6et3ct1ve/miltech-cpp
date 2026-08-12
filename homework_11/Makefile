@@ -1,5 +1,5 @@
 CXX_FILES = include/Types.h include/MissionProcessor.h include/Logging.h \
-            include/interfaces/IBallisticSolver.h include/interfaces/IDroneState.h \
+            include/interfaces/IBallisticSolver.h include/interfaces/IDroneState.h include/interfaces/ILinkHandler.h include/interfaces/IUartLink.h include/interfaces/IGpioOutput.h \
             include/solvers/AnalyticalSolver.h include/solvers/BallisticTable.h include/solvers/TableSolver.h \
             include/config/ComponentFactory.h \
             include/states/StoppedState.h include/states/AcceleratingState.h include/states/DeceleratingState.h include/states/TurningState.h include/states/MovingState.h \
