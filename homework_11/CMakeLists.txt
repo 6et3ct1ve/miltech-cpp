@@ -38,11 +38,7 @@ if(NOT CMAKE_CROSSCOMPILING)
     add_executable(Hw11MissionTests tests/MissionTests.cpp)
     target_include_directories(Hw11MissionTests PRIVATE include)
     target_link_libraries(
-        Hw11MissionTests
-        PRIVATE Hw11BallisticSolver
-                Hw11DroneStates
-                Hw11MissionProcessor
-                Hw11Factory
-                GTest::gtest_main)
+        Hw11MissionTests PRIVATE Hw11BallisticSolver Hw11DroneStates Hw11MissionProcessor
+                                 Hw11Factory GTest::gtest_main)
     gtest_discover_tests(Hw11MissionTests DISCOVERY_MODE PRE_TEST)
 endif()
