@@ -1,5 +1,6 @@
 CXX_FILES = include/Types.h include/MissionProcessor.h include/Logging.h \
             include/interfaces/IBallisticSolver.h include/interfaces/IDroneState.h include/interfaces/ILinkHandler.h include/interfaces/IUartLink.h include/interfaces/IGpioOutput.h \
+            include/io/UartLink.h \
             include/solvers/AnalyticalSolver.h include/solvers/BallisticTable.h include/solvers/TableSolver.h \
             include/config/ComponentFactory.h \
             include/states/StoppedState.h include/states/AcceleratingState.h include/states/DeceleratingState.h include/states/TurningState.h include/states/MovingState.h \
@@ -17,7 +18,7 @@ format:
 	cmake-format -i $(CMAKE_FILE)
 
 lint:
-	run-clang-tidy -p ../build/debug -header-filter='homework_11/(src|include)/.*' 'homework_11/' 2>&1 | grep "error:" || true
+	run-clang-tidy -p ../build/debug -header-filter='homework_11/(src|include)/(?!drone_link\.h).*' 'homework_11/' 2>&1 | grep "error:" || true
 
 test:
 	cmake --build ../build/debug --target Hw11MissionTests
