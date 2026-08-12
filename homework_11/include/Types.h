@@ -63,19 +63,13 @@ struct AmmoParams {
 enum class DroneMode { STOPPED, ACCELERATING, DECELERATING, TURNING, MOVING };
 
 struct DroneConfig {
-  Coord startPos{};
   float altitude = 0.0f;
-  float initialDir = 0.0f;
   float attackSpeed = 0.0f;
   float accelPath = 0.0f;
-  std::string ammoName;
-  float arrayTimeStep = 0.0f;
-  float simTimeStep = 0.0f;
-  float hitRadius = 0.0f;
   float angularSpeed = 0.0f;
   float turnThreshold = 0.0f;
-  float physicsTimeStep = 0.01f;
-  float timeScale = 1.0f;
+  float timeStep = 0.0f;
+  float hitRadius = 0.0f;
 };
 
 struct DroneContext {
@@ -96,15 +90,4 @@ struct DroneTelemetry {
   DroneMode mode = DroneMode::STOPPED;
   float timeSecSinceStart = 0.0f;
   float acceleration = 0.0f;
-};
-
-struct SimStep {
-  Coord pos{};
-  float direction = 0.0f;
-  std::string state;
-  int targetIdx = 0;
-  Coord dropPoint{};
-  Coord aimPoint{};
-  Coord predictedTarget{};
-  float timeSecSinceStart = 0.0f;
 };
