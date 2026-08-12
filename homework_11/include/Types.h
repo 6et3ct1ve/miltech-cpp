@@ -63,7 +63,6 @@ struct AmmoParams {
 enum class DroneMode { STOPPED, ACCELERATING, DECELERATING, TURNING, MOVING };
 
 struct DroneConfig {
-  float altitude = 0.0f;
   float attackSpeed = 0.0f;
   float accelPath = 0.0f;
   float angularSpeed = 0.0f;
@@ -90,4 +89,5 @@ struct DroneTelemetry {
   DroneMode mode = DroneMode::STOPPED;
   float timeSecSinceStart = 0.0f;
   float acceleration = 0.0f;
+  float altitude = 0.0f;
 };
