@@ -24,6 +24,7 @@ private:
   int fd_ = -1;
   dlink::Parser parser_;
   DroneConfig config_{};
+  float acceleration_ = 0.0f;
   bool hasConfig_ = false;
   bool ok_ = false;
 };
