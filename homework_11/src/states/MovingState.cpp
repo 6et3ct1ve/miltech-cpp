@@ -15,7 +15,7 @@ std::unique_ptr<IDroneState> MovingState::execute(const DroneTelemetry& /*tlm*/,
     return std::make_unique<DeceleratingState>();
   }
 
-  const float deadband = ctx.config->angularSpeed * ctx.config->physicsTimeStep * kDeadbandFactor;
+  const float deadband = ctx.config->angularSpeed * ctx.config->timeStep * kDeadbandFactor;
 
   cmd.mode = DroneMode::MOVING;
   cmd.angleSpeed = (fabsf(ctx.deltaAngle) > deadband) ? std::copysign(ctx.config->angularSpeed, ctx.deltaAngle) : 0.0f;

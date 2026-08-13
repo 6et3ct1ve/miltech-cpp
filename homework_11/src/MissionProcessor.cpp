@@ -1,108 +1,71 @@
 #include "MissionProcessor.h"
 #include "Logging.h"
-#include "states/StoppedState.h"
+#include "Types.h"
 #include "states/MovingState.h"
 #include "interfaces/IBallisticSolver.h"
-#include "interfaces/IConfigLoader.h"
 #include "interfaces/IDroneState.h"
-#include "interfaces/ITargetProvider.h"
 
 #include <cmath>
 #include <iostream>
-#include <string>
 #include <vector>
-#include <thread>
-#include <chrono>
+#include <span>
 
 // NOLINTBEGIN(modernize-use-trailing-return-type,cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
-namespace {
-
-const char* modeName(DroneMode mode)
-{
-  switch (mode) {
-    case DroneMode::STOPPED:
-      return "Stopped";
-    case DroneMode::ACCELERATING:
-      return "Accelerating";
-    case DroneMode::DECELERATING:
-      return "Decelerating";
-    case DroneMode::TURNING:
-      return "Turning";
-    case DroneMode::MOVING:
-      return "Moving";
-  }
-  return "Unknown";
-}
-
-}  // namespace
-
-MissionProcessor::MissionProcessor(ITargetProvider* provider,
-                                   std::unique_ptr<IBallisticSolver> solver,
-                                   std::unique_ptr<IConfigLoader> loader,
-                                   DronePhysics* physics)
-  : provider_(provider)
-  , solver_(std::move(solver))
-  , loader_(std::move(loader))
-  , currentState_(std::make_unique<StoppedState>())
-  , physics_(physics)
+MissionProcessor::MissionProcessor(std::unique_ptr<IBallisticSolver> solver)
+  : solver_(std::move(solver))
+  , currentState_(std::make_unique<MovingState>())
 {
 }
 
-bool MissionProcessor::init(const std::string& configSource)
+void MissionProcessor::configure(const DroneConfig& config, const AmmoParams& ammo, int targetCount)
 {
-  if (configSource.empty()) {
-    return false;
+  config_ = config;
+  ammo_ = ammo;
+  targetCount_ = targetCount;
+
+  if (targetCount_ <= 0 || solver_ == nullptr) {
+    std::cerr << "Invalid mission configuration\n";
+    return;
   }
-
-  config_ = loader_->getConfig();
-  ammo_ = loader_->getAmmoParams();
-
-  if (physics_ == nullptr || !physics_->init(config_) || provider_ == nullptr) {
-    std::cerr << "Physics init error\n";
-    return false;
-  }
-
-  targetCount_ = provider_->getTargetCount();
-  if (targetCount_ == 0) {
-    std::cerr << "No targets available\n";
-    return false;
-  }
-
-  currentState_ = std::make_unique<MovingState>();
-  prevTarget_ = -1;
-  steps_ = 0;
 
   firePoint_.resize(targetCount_);
   totalTime_.resize(targetCount_);
   predictedAll_.resize(targetCount_);
-  simSteps_.reserve(kMaxSteps);
 
-  const DroneTelemetry tlm = physics_->getTelemetry();
-  bool solverOk = true;
-  float dummyH = 0.0f;
-  solver_->solve(tlm.pos, provider_->getTarget(0).pos, config_.altitude, config_.accelPath, config_.attackSpeed, ammo_, dummyH, solverOk);
-  if (!solverOk) {
-    return false;
+  prevTarget_ = -1;
+  shouldDrop_ = false;
+  ok_ = true;
+
+  LOG("Mission configured, speed = " << config_.attackSpeed);
+}
+
+bool MissionProcessor::isReady() const
+{
+  return ok_;
+}
+
+bool MissionProcessor::shouldDrop() const
+{
+  return shouldDrop_;
+}
+
+DroneCommand MissionProcessor::step(const DroneTelemetry& tlm, std::span<const Target> targets)
+{
+  if (!ok_) {
+    std::cerr << "MissionProcessor is not ready\n";
+    return DroneCommand{};
   }
 
-  LOG("Config loaded, speed = " << config_.attackSpeed);
+  if (targets.size() < static_cast<size_t>(targetCount_)) {
+    std::cerr << "Not enough targets provided\n";
+    return DroneCommand{};
+  }
 
-  return true;
-}
-
-bool MissionProcessor::hasNext() const
-{
-  return steps_ < kMaxSteps && ok_ && !finished_;
-}
-
-void MissionProcessor::step()
-{
-  const DroneTelemetry tlm = physics_->getTelemetry();
   float h = 0.0f;
 
   for (int i = 0; i < targetCount_; i++) {
-    Target tgt = provider_->getTarget(i);
+    Target tgt = targets[i];
     Coord target = tgt.pos;
     Coord vel = tgt.velocity;
 
@@ -110,7 +73,7 @@ void MissionProcessor::step()
     if (fabsf(D) < 1e-9f) {
       std::cerr << "Calculation error\n";
       ok_ = false;
-      return;
+      return DroneCommand{};
     }
     totalTime_[i] = D / config_.attackSpeed;
 
@@ -121,15 +84,15 @@ void MissionProcessor::step()
     if (fabsf(D) < 1e-9f) {
       std::cerr << "Calculation error\n";
       ok_ = false;
-      return;
+      return DroneCommand{};
     }
     totalTime_[i] = D / config_.attackSpeed;
 
     bool solverOk = true;
-    firePoint_[i] = solver_->solve(tlm.pos, predicted, config_.altitude, config_.accelPath, config_.attackSpeed, ammo_, h, solverOk);
+    firePoint_[i] = solver_->solve(tlm.pos, predicted, tlm.altitude, config_.accelPath, config_.attackSpeed, ammo_, h, solverOk);
     if (!solverOk) {
       ok_ = false;
-      return;
+      return DroneCommand{};
     }
   }
 
@@ -170,77 +133,11 @@ void MissionProcessor::step()
     currentState_ = std::move(next);
   }
 
-  physics_->submit(cmd);
-
-  SimStep newStep{};
-  newStep.pos = tlm.pos;
-  newStep.direction = tlm.direction;
-  newStep.state = modeName(tlm.mode);
-  newStep.targetIdx = currentTarget;
-  newStep.dropPoint = firePoint_[currentTarget];
-  newStep.aimPoint = tlm.pos + Coord{cosf(tlm.direction), sinf(tlm.direction)} * h;
-  newStep.predictedTarget = predictedAll_[currentTarget];
-  newStep.timeSecSinceStart = tlm.timeSecSinceStart;
-  simSteps_.push_back(newStep);
-  steps_++;
-
   if (sqrtf(powf(tlm.pos.x - firePoint_[currentTarget].x, 2) + powf(tlm.pos.y - firePoint_[currentTarget].y, 2)) < config_.hitRadius) {
-    finished_ = true;
+    shouldDrop_ = true;
   }
 
-  DEBUG("Step " << steps_ << " pos = (" << tlm.pos.x << "," << tlm.pos.y << ") target = " << currentTarget
-                << " state = " << modeName(tlm.mode));
-}
-
-void MissionProcessor::reset()
-{
-  currentState_ = std::make_unique<MovingState>();
-  prevTarget_ = -1;
-  steps_ = 0;
-  ok_ = true;
-  finished_ = false;
-}
-
-void MissionProcessor::changeSolver(std::unique_ptr<IBallisticSolver> solver)
-{
-  solver_ = std::move(solver);
-}
-int MissionProcessor::getStepCount() const
-{
-  return steps_;
-}
-
-const std::vector<SimStep>& MissionProcessor::getSteps() const
-{
-  return simSteps_;
-}
-
-void MissionProcessor::run()
-{
-  ready_ = true;
-
-  while (!started_ && running_) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-  }
-
-  while (running_ && hasNext()) {
-    step();
-    std::this_thread::sleep_for(std::chrono::duration<float>(config_.simTimeStep / config_.timeScale));
-  }
-}
-
-void MissionProcessor::start()
-{
-  started_ = true;
-}
-
-void MissionProcessor::stop()
-{
-  running_ = false;
-}
-
-bool MissionProcessor::isThreadReady() const
-{
-  return ready_;
+  DEBUG("pos = (" << tlm.pos.x << "," << tlm.pos.y << ") target = " << currentTarget << " t = " << tlm.timeSecSinceStart);
+  return cmd;
 }
 // NOLINTEND(modernize-use-trailing-return-type,cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
