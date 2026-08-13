@@ -32,3 +32,9 @@ cmake
 clang-format
 cmake-format
 ninja-build
+
+# Заняття 4.4: hardware-інтерфейси — libgpiod, віртуальний UART.
+pkg-config
+gpiod
+libgpiod-dev
+socat
