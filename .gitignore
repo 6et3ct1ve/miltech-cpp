@@ -20,6 +20,7 @@ homework_09/data/simulation.json
 !homework_10/Makefile
 homework_10/data/simulation.json
 !homework_11/Makefile
+checker_linux_x86_64
 
 
 # Мінімальний набір compiled/debug артефактів для C++ прикладів.
