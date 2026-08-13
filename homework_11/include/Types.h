@@ -91,3 +91,8 @@ struct DroneTelemetry {
   float acceleration = 0.0f;
   float altitude = 0.0f;
 };
+
+struct ControlOutput {
+  float accel = 0.0f;
+  float turnRate = 0.0f;
+};
