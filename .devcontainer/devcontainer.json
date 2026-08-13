@@ -47,7 +47,12 @@
     "--security-opt=seccomp=unconfined",
     "--ulimit=core=-1",
     "--hostname=devcontainer",
-    "--add-host=devcontainer:127.0.1.1"
+    "--add-host=devcontainer:127.0.1.1",
+    "--privileged", 
+    "-v", 
+    "/sys/kernel/config:/sys/kernel/config",
+    "-v", "/dev:/dev",
+    "-v", "/run/udev:/run/udev"
   ],
 
   // Усе всередині customizations.vscode застосовується саме до VS Code

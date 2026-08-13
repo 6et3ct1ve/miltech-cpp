@@ -23,7 +23,7 @@ void TargetTracker::update(int id, Coord pos, float t)
   if (id < 0 || static_cast<size_t>(id) >= targets_.size()) {
     return;
   }
-  const size_t i = static_cast<size_t>(id);
+  const auto i = static_cast<size_t>(id);
 
   if (prevTime_[i].has_value()) {
     const float dt = t - *prevTime_[i];
@@ -37,7 +37,7 @@ void TargetTracker::update(int id, Coord pos, float t)
   prevTime_[i] = t;
 }
 
-std::span<const Target> TargetTracker::targets() const
+std::span<const Target> TargetTracker::targets() const  // NOLINT(modernize-use-trailing-return-type)
 {
   return targets_;
 }

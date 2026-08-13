@@ -13,7 +13,7 @@ void DroneController::configure(const DroneConfig& config)
   angularSpeed_ = config.angularSpeed;
 }
 
-ControlOutput DroneController::toControl(const DroneCommand& cmd) const
+ControlOutput DroneController::toControl(const DroneCommand& cmd) const  // NOLINT(modernize-use-trailing-return-type)
 {
   ControlOutput out{};
 

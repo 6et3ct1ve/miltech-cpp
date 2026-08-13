@@ -1,5 +1,11 @@
 #include "MissionRunner.h"
 
+namespace {
+
+constexpr int kDropPulseMs = 100;
+
+}  // namespace
+
 MissionRunner::MissionRunner(
   MissionProcessor& mission, DroneController& controller, TargetTracker& tracker, IUartLink& link, IGpioOutput& gpio)
   : mission_(mission)
@@ -23,7 +29,7 @@ void MissionRunner::onTelemetry(const DroneTelemetry& tlm)
   link_.sendControl(ctrl.accel, ctrl.turnRate);
 
   if (!dropped_ && mission_.shouldDrop()) {
-    gpio_.pulseDrop(100);
+    gpio_.pulseDrop(kDropPulseMs);
     dropped_ = true;
   }
 }
@@ -53,7 +59,7 @@ void MissionRunner::onConfig(const DroneConfig& config)
   tryConfigure();
 }
 
-bool MissionRunner::isDropped() const
+bool MissionRunner::isDropped() const  // NOLINT(modernize-use-trailing-return-type)
 {
   return dropped_;
 }

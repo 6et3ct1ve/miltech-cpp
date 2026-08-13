@@ -10,7 +10,7 @@ constexpr int kUsPerMs = 1000;
 
 GpioOutput::GpioOutput(const std::string& chipName, int startLine, int dropLine)
 {
-  chip_ = gpiod_chip_open_by_name(chipName.c_str());
+  chip_ = gpiod_chip_open_by_name(chipName.c_str());  // NOLINT(cppcoreguidelines-prefer-member-initializer)
   if (!chip_) {
     std::cerr << "Failed to open GPIO chip: " << chipName << "\n";
     return;
@@ -61,7 +61,7 @@ void GpioOutput::pulseDrop(int durationMs)
   }
 }
 
-bool GpioOutput::isValid() const
+bool GpioOutput::isValid() const  // NOLINT(modernize-use-trailing-return-type)
 {
   return ok_;
 }
