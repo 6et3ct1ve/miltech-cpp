@@ -23,7 +23,7 @@ void MissionRunner::onTelemetry(const DroneTelemetry& tlm)
   link_.sendControl(ctrl.accel, ctrl.turnRate);
 
   if (!dropped_ && mission_.shouldDrop()) {
-    gpio_.pulseDrop();
+    gpio_.pulseDrop(100);
     dropped_ = true;
   }
 }
