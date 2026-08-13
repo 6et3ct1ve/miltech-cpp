@@ -36,9 +36,16 @@ target_include_directories(Hw11Factory PUBLIC include)
 target_link_libraries(Hw11Factory PUBLIC Hw11BallisticSolver Hw11Io)
 target_compile_options(Hw11Factory PRIVATE -Wall -Wextra -pedantic)
 
+add_library(Hw11MissionRunner src/MissionRunner.cpp)
+target_include_directories(Hw11MissionRunner PUBLIC include)
+target_link_libraries(Hw11MissionRunner PUBLIC Hw11MissionProcessor Hw11DroneController
+                                               Hw11TargetTracker Hw11Io)
+target_compile_options(Hw11MissionRunner PRIVATE -Wall -Wextra -pedantic)
+
 add_executable(Hw11MissionCheck src/main.cpp)
-target_link_libraries(Hw11MissionCheck PRIVATE Hw11MissionProcessor Hw11Factory Hw11Io
-                                               Hw11TargetTracker Hw11DroneController)
+target_link_libraries(
+    Hw11MissionCheck PRIVATE Hw11MissionProcessor Hw11Factory Hw11Io Hw11TargetTracker
+                             Hw11DroneController Hw11MissionRunner)
 target_compile_options(Hw11MissionCheck PRIVATE -Wall -Wextra -pedantic)
 
 if(NOT CMAKE_CROSSCOMPILING)
@@ -59,6 +66,7 @@ if(NOT CMAKE_CROSSCOMPILING)
                 Hw11TargetTracker
                 Hw11Io
                 Hw11DroneController
+                Hw11MissionRunner
                 Hw11Factory
                 GTest::gtest_main)
     gtest_discover_tests(Hw11MissionTests DISCOVERY_MODE PRE_TEST)
