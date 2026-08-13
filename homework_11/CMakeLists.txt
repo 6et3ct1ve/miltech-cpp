@@ -13,13 +13,14 @@ add_library(
 target_include_directories(Hw11DroneStates PUBLIC include)
 target_compile_options(Hw11DroneStates PRIVATE -Wall -Wextra -pedantic)
 
-add_library(Hw11Io src/io/UartLink.cpp)
+add_library(Hw11Io src/io/UartLink.cpp src/io/GpioOutput.cpp)
 target_include_directories(Hw11Io PUBLIC include)
+target_link_libraries(Hw11Io PUBLIC gpiod)
 target_compile_options(Hw11Io PRIVATE -Wall -Wextra -pedantic)
 
 add_library(Hw11MissionProcessor src/MissionProcessor.cpp)
 target_include_directories(Hw11MissionProcessor PUBLIC include)
-target_link_libraries(Hw11MissionProcessor PUBLIC Hw11BallisticSolver Hw11DroneStates)
+target_link_libraries(Hw11MissionProcessor PUBLIC Hw11BallisticSolver Hw11DroneStates Hw11Io)
 target_compile_options(Hw11MissionProcessor PRIVATE -Wall -Wextra -pedantic)
 
 add_library(Hw11Factory src/config/ComponentFactory.cpp)
