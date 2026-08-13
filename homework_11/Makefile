@@ -1,10 +1,10 @@
-CXX_FILES = include/Types.h include/MissionProcessor.h include/Logging.h \
+CXX_FILES = include/Types.h include/MissionProcessor.h include/Logging.h include/TargetTracker.h \
             include/interfaces/IBallisticSolver.h include/interfaces/IDroneState.h include/interfaces/ILinkHandler.h include/interfaces/IUartLink.h include/interfaces/IGpioOutput.h \
             include/io/UartLink.h include/io/GpioOutput.h \
             include/solvers/AnalyticalSolver.h include/solvers/BallisticTable.h include/solvers/TableSolver.h \
             include/config/ComponentFactory.h \
             include/states/StoppedState.h include/states/AcceleratingState.h include/states/DeceleratingState.h include/states/TurningState.h include/states/MovingState.h \
-            src/MissionProcessor.cpp src/main.cpp \
+            src/TargetTracker.cpp src/MissionProcessor.cpp src/main.cpp \
             src/io/UartLink.cpp src/io/GpioOutput.cpp \
             src/solvers/AnalyticalSolver.cpp src/solvers/BallisticTable.cpp src/solvers/TableSolver.cpp \
             src/config/ComponentFactory.cpp \
