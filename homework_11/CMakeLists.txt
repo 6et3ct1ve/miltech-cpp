@@ -33,7 +33,7 @@ target_compile_options(Hw11MissionProcessor PRIVATE -Wall -Wextra -pedantic)
 
 add_library(Hw11Factory src/config/ComponentFactory.cpp)
 target_include_directories(Hw11Factory PUBLIC include)
-target_link_libraries(Hw11Factory PUBLIC Hw11BallisticSolver)
+target_link_libraries(Hw11Factory PUBLIC Hw11BallisticSolver Hw11Io)
 target_compile_options(Hw11Factory PRIVATE -Wall -Wextra -pedantic)
 
 add_executable(Hw11MissionCheck src/main.cpp)
